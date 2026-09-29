@@ -12,7 +12,7 @@ Lee `docs/architecture.md` antes de cambiar decisiones. Documenta primero cualqu
 - Clientes web exclusivamente con clave pública y sesión del usuario. Prohibido introducir service-role en la aplicación o en NEXT_PUBLIC_*.
 - Las funciones SECURITY DEFINER deben fijar search_path, comprobar identidad/organización/alcance y revocar EXECUTE de PUBLIC/anon.
 - Toda nueva tabla de negocio necesita organization_id, FK compuestas, RLS e índices de acceso. Las vistas usan security_invoker.
-- SUPERADMIN no evita RLS. Un perfil desactivado pierde acceso inmediatamente.
+- SUPERADMIN no evita RLS. Un perfil desactivado pierde acceso a nuevas consultas inmediatamente; una URL de evidencia ya firmada permanece válida hasta su breve caducidad.
 - No permitir escrituras directas a inspecciones, respuestas, incidencias, firmas, perfiles ni auditoría desde el cliente.
 - Versiones publicadas inmutables. El histórico utiliza checklist_version_id, jamás la plantilla vigente.
 - Finalización, incidencias, firma y bloqueo en una única transacción; reintentos idempotentes. Nunca desbloquear automáticamente.
