@@ -1,4 +1,4 @@
-﻿# Decisiones de arquitectura — primera entrega
+# Decisiones de arquitectura — primera entrega
 
 - Next.js App Router con Server Components para lectura y Server Actions para mutaciones. Formularios de inspección locales; envío completo al finalizar, sin escrituras por cada pulsación.
 - PostgreSQL es la autoridad: RLS por organización y sucursal, claves foráneas compuestas y funciones transaccionales para inicio/finalización. SUPERADMIN no obtiene acceso global implícito a datos empresariales.
