@@ -909,6 +909,23 @@ input[type='checkbox'] {
   font-size: 10px;
   margin: 10px 0 22px;
 }
+.signature img {
+  max-width: 100%;
+  height: auto;
+}
+.evidence-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 20px;
+}
+.evidence-grid img {
+  width: 240px;
+  max-width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+}
 .confirm-check {
   display: flex;
   flex-direction: row;

@@ -29,11 +29,34 @@ export default async function InspectionPage({ params }: { params: Promise<{ id:
     throw new Error('No se puede cargar la inspección');
   let content;
   if (i.completed_at) {
-    const [answers, signature] = await Promise.all([
+    const [answers, signature, incidents] = await Promise.all([
       db.from('inspection_answers').select('*').eq('inspection_id', i.id),
       db.from('signatures').select('*').eq('inspection_id', i.id).single(),
+      db.from('incidents').select('id').eq('inspection_id', i.id),
     ]);
-    if (answers.error || signature.error) throw new Error('No se puede cargar el resultado');
+    if (answers.error || signature.error || incidents.error)
+      throw new Error('No se puede cargar el resultado');
+    const evidence: { id: string; url: string }[] = [];
+    if (incidents.data.length) {
+      const { data: attachments, error: attachmentError } = await db
+        .from('incident_attachments')
+        .select('*')
+        .in(
+          'incident_id',
+          incidents.data.map((incident) => incident.id),
+        );
+      if (attachmentError) throw attachmentError;
+      const results = await Promise.all(
+        attachments.map(async (attachment) => {
+          const { data, error } = await db.storage
+            .from('inspection-evidence')
+            .createSignedUrl(attachment.storage_path, 300);
+          if (error) throw error;
+          return { id: attachment.id, url: data.signedUrl };
+        }),
+      );
+      evidence.push(...results);
+    }
     const { data: signed, error: signatureError } = await db.storage
       .from('inspection-evidence')
       .createSignedUrl(signature.data.storage_path, 60);
@@ -69,6 +92,24 @@ export default async function InspectionPage({ params }: { params: Promise<{ id:
               unoptimized
             />
           )}
+          {evidence.length > 0 && (
+            <>
+              <h2>Fotografías de las incidencias</h2>
+              <div className="evidence-grid">
+                {evidence.map((photo, index) => (
+                  <a key={photo.id} href={photo.url} target="_blank" rel="noreferrer">
+                    <Image
+                      src={photo.url}
+                      alt={`Evidencia de incidencia ${index + 1}`}
+                      width={240}
+                      height={180}
+                      unoptimized
+                    />
+                  </a>
+                ))}
+              </div>
+            </>
+          )}
         </section>
       </>
     );
@@ -78,7 +119,29 @@ export default async function InspectionPage({ params }: { params: Promise<{ id:
         Esta inspección está en curso. Solo el operario que la inició puede completarla.
       </div>
     );
-  else content = <InspectionForm inspectionId={i.id} items={items.data} sections={sections.data} />;
+  else {
+    const prefix = `${profile.organization_id}/${i.id}`;
+    const { data: objects, error: listError } = await db.storage
+      .from('inspection-evidence')
+      .list(prefix, { search: 'signature.png' });
+    if (listError) throw listError;
+    let existingSignature: string | undefined;
+    if (objects?.some((object) => object.name === 'signature.png')) {
+      const { data, error } = await db.storage
+        .from('inspection-evidence')
+        .createSignedUrl(`${prefix}/signature.png`, 300);
+      if (error) throw error;
+      existingSignature = data.signedUrl;
+    }
+    content = (
+      <InspectionForm
+        inspectionId={i.id}
+        items={items.data}
+        sections={sections.data}
+        existingSignature={existingSignature}
+      />
+    );
+  }
   return (
     <div className="inspection-page">
       {equipment.data && (

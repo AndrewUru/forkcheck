@@ -1,5 +1,8 @@
 create function public.dashboard_metrics(p_date date, p_region uuid default null, p_branch uuid default null, p_zone uuid default null, p_type uuid default null, p_brand text default null, p_model text default null)
-returns jsonb language sql stable security invoker set search_path='' as $$
+returns jsonb language plpgsql stable security invoker set search_path='' as $$
+ begin
+ if private.role() is null or private.role() not in ('SUPERVISOR','REGIONAL_MANAGER','CORPORATE_ADMIN') then raise exception 'Not authorized' using errcode='42501'; end if;
+ return (
  with assets as (
  select * from public.equipment_overview e where (p_region is null or region_id=p_region) and (p_branch is null or branch_id=p_branch)
  and (p_zone is null or zone_id=p_zone) and (p_type is null or equipment_type_id=p_type) and (p_brand is null or brand=p_brand) and (p_model is null or model=p_model)
@@ -16,6 +19,7 @@ returns jsonb language sql stable security invoker set search_path='' as $$
  'warning',(select count(*) from assets where status='WARNING'),'blocked',(select count(*) from assets where status='BLOCKED'),
  'due',(select count(*) from due),'completed',(select count(*) from done),'pending',(select count(*) from due where id not in(select schedule_id from done)),
  'incidents',(select count(*) from issues),'critical',(select count(*) from issues where severity='CRITICAL'))
-$$;
+ );
+ end $$;
 revoke all on function public.dashboard_metrics(date,uuid,uuid,uuid,uuid,text,text) from public,anon;
 grant execute on function public.dashboard_metrics(date,uuid,uuid,uuid,uuid,text,text) to authenticated;

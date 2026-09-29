@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Check, AlertTriangle, Ban, Minus, CheckCheck, Camera } from 'lucide-react';
 import { completeInspection, uploadEvidence } from '@/app/actions';
 import { Signature } from './signature';
@@ -17,10 +18,12 @@ export function InspectionForm({
   inspectionId,
   items,
   sections,
+  existingSignature,
 }: {
   inspectionId: string;
   items: ChecklistItem[];
   sections: { id: string; title: string }[];
+  existingSignature?: string;
 }) {
   const router = useRouter();
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
@@ -30,7 +33,7 @@ export function InspectionForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [bulk, setBulk] = useState(false);
-  const [signatureUploaded, setSignatureUploaded] = useState(false);
+  const [signatureUploaded, setSignatureUploaded] = useState(Boolean(existingSignature));
   const [uploadedPhotos, setUploadedPhotos] = useState<Record<string, string[]>>({});
   const unanswered = items.filter((i) => !answers[i.id] && i.allowed_answers.includes('OK'));
   const required = items.filter((i) => i.required);
@@ -48,7 +51,7 @@ export function InspectionForm({
   }
   async function submit() {
     setError('');
-    if (done < required.length || !signature || !confirmed) {
+    if (done < required.length || (!signature && !existingSignature) || !confirmed) {
       setError('Responde los puntos obligatorios, firma y confirma la revisión.');
       return;
     }
@@ -89,7 +92,7 @@ export function InspectionForm({
           setUploadedPhotos((prev) => ({ ...prev, [a.item_id]: [...a.photos] }));
         }
       }
-      if (!signatureUploaded) {
+      if (!signatureUploaded && signature) {
         const data = new FormData();
         data.set('inspection', inspectionId);
         data.set('item', 'signature');
@@ -144,6 +147,7 @@ export function InspectionForm({
           <button
             type="button"
             className="button dark"
+            disabled={busy}
             onClick={() => {
               const next = { ...answers };
               for (const i of unanswered)
@@ -253,7 +257,24 @@ export function InspectionForm({
           </section>
         ))}
         <section className="panel signature-panel">
-          <Signature disabled={busy || signatureUploaded} onChange={setSignature} />
+          {existingSignature ? (
+            <div className="signature">
+              <h2>Firma ya guardada</h2>
+              <Image
+                src={existingSignature}
+                alt="Tu firma guardada para esta inspección"
+                width={400}
+                height={140}
+                unoptimized
+              />
+              <p>
+                La firma se conserva del envío anterior. Revisa las respuestas y confirma de nuevo
+                antes de finalizar.
+              </p>
+            </div>
+          ) : (
+            <Signature disabled={busy || signatureUploaded} onChange={setSignature} />
+          )}
           <label className="confirm-check">
             <input
               type="checkbox"

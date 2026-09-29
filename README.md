@@ -49,16 +49,16 @@ El alta es una operación administrativa fuera de la aplicación. Proporciona te
 
 Variables requeridas por `npm run provision:user`:
 
-| Variable | Ejemplo / significado |
-| --- | --- |
-| `PROVISION_ORGANIZATION` | `demo-logistics` |
-| `PROVISION_EMPLOYEE` | `admin01`, en minúsculas |
-| `PROVISION_FIRST_NAME` | Nombre |
-| `PROVISION_LAST_NAME` | Apellidos |
-| `PROVISION_ROLE` | `CORPORATE_ADMIN` para el primer administrador |
-| `PROVISION_PASSWORD` | Contraseña inicial única de al menos 12 caracteres, suministrada como secreto |
-| `PROVISION_BRANCHES` | UUID de sucursales separados por comas; obligatorio para roles con alcance limitado |
-| `SUPABASE_SERVICE_ROLE_KEY` | Clave administrativa solo durante la provisión |
+| Variable                    | Ejemplo / significado                                                               |
+| --------------------------- | ----------------------------------------------------------------------------------- |
+| `PROVISION_ORGANIZATION`    | `demo-logistics`                                                                    |
+| `PROVISION_EMPLOYEE`        | `admin01`, en minúsculas                                                            |
+| `PROVISION_FIRST_NAME`      | Nombre                                                                              |
+| `PROVISION_LAST_NAME`       | Apellidos                                                                           |
+| `PROVISION_ROLE`            | `CORPORATE_ADMIN` para el primer administrador                                      |
+| `PROVISION_PASSWORD`        | Contraseña inicial única de al menos 12 caracteres, suministrada como secreto       |
+| `PROVISION_BRANCHES`        | UUID de sucursales separados por comas; obligatorio para roles con alcance limitado |
+| `SUPABASE_SERVICE_ROLE_KEY` | Clave administrativa solo durante la provisión                                      |
 
 ```powershell
 npm run provision:user
@@ -68,14 +68,14 @@ El script usa `auth.admin.createUser`, crea el perfil y valida las sucursales co
 
 ## Roles y acceso
 
-| Rol | Alcance inicial |
-| --- | --- |
-| OPERARIO | Equipos/historial de sucursales explícitas, iniciar y completar sus inspecciones |
-| MANTENIMIENTO | Lectura técnica de sucursales asignadas; esquema preparado para órdenes/acciones |
-| SUPERVISOR | Lectura, dashboard e inspecciones en sucursales asignadas |
-| REGIONAL_MANAGER | Dashboard y lectura de múltiples sucursales explícitamente asignadas |
-| CORPORATE_ADMIN | Lectura y operación en su organización completa |
-| SUPERADMIN | Sin bypass multi-tenant; reservado para administración técnica |
+| Rol              | Alcance inicial                                                                  |
+| ---------------- | -------------------------------------------------------------------------------- |
+| OPERARIO         | Equipos/historial de sucursales explícitas, iniciar y completar sus inspecciones |
+| MANTENIMIENTO    | Lectura técnica de sucursales asignadas; esquema preparado para órdenes/acciones |
+| SUPERVISOR       | Lectura, dashboard e inspecciones en sucursales asignadas                        |
+| REGIONAL_MANAGER | Dashboard y lectura de múltiples sucursales explícitamente asignadas             |
+| CORPORATE_ADMIN  | Lectura y operación en su organización completa                                  |
+| SUPERADMIN       | Sin bypass multi-tenant; reservado para administración técnica                   |
 
 Las pantallas para altas de equipos, configuración de plantillas, usuarios y actualizaciones de mantenimiento quedan fuera de esta primera entrega. Las escrituras administrativas se realizan por tooling de confianza; **no se conceden permisos SQL amplios al navegador** para suplir pantallas pendientes. La administración técnica de plataforma no confiere lectura global de tenants.
 
@@ -125,6 +125,7 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
+npx playwright install chromium
 npm run test:e2e
 ```
 

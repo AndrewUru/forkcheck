@@ -2,6 +2,7 @@ import { ClipboardCheck, ArrowRight, ShieldCheck } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { login } from '@/app/actions';
 import { isConfigured } from '@/lib/supabase/server';
+export const dynamic = 'force-dynamic';
 export default async function Login({
   searchParams,
 }: {

@@ -269,6 +269,119 @@ describe('real PostgreSQL migrations, RLS and transactional workflow', () => {
       ),
     ).rejects.toThrow();
   });
+  it('preserves old questions when a new version is published and never auto-unblocks', async () => {
+    await admin();
+    const template = (await scalar<{ template_id: string }>(
+      'select template_id from checklist_versions where id=$1',
+      [version],
+    ))!.template_id;
+    const nextVersion = crypto.randomUUID();
+    const section = crypto.randomUUID();
+    const nextItem = crypto.randomUUID();
+    await db.query(
+      'insert into checklist_versions(id,organization_id,template_id,version) values($1,$2,$3,2)',
+      [nextVersion, org, template],
+    );
+    await db.query(
+      "insert into checklist_sections(id,organization_id,version_id,title,sort_order) values($1,$2,$3,'Nueva sección',1)",
+      [section, org, nextVersion],
+    );
+    await db.query(
+      "insert into checklist_items(id,organization_id,version_id,section_id,label,sort_order) values($1,$2,$3,$4,'Nueva comprobación',1)",
+      [nextItem, org, nextVersion, section],
+    );
+    await db.query('update checklist_versions set published_at=now() where id=$1', [nextVersion]);
+    await asUser();
+    expect(
+      (
+        await scalar<{ checklist_version_id: string }>(
+          'select checklist_version_id from inspections where id=$1',
+          [inspection],
+        )
+      )?.checklist_version_id,
+    ).toBe(version);
+    expect(
+      (
+        await scalar<{ count: number }>(
+          'select count(*)::int count from checklist_items where version_id=$1',
+          [version],
+        )
+      )?.count,
+    ).toBe(12);
+    const nextInspection = (await scalar<{ id: string }>('select start_inspection($1) id', [
+      schedule,
+    ]))!.id;
+    expect(
+      (
+        await scalar<{ checklist_version_id: string }>(
+          'select checklist_version_id from inspections where id=$1',
+          [nextInspection],
+        )
+      )?.checklist_version_id,
+    ).toBe(nextVersion);
+    await db.query(
+      "insert into storage.objects(bucket_id,name,metadata) values('inspection-evidence',$1,$2)",
+      [
+        `${org}/${nextInspection}/signature.png`,
+        JSON.stringify({ mimetype: 'image/png', size: 500 }),
+      ],
+    );
+    await db.query('select finish_inspection($1,$2::jsonb)', [
+      nextInspection,
+      JSON.stringify([{ item_id: nextItem, answer: 'OK' }]),
+    ]);
+    expect(
+      (await scalar<{ status: string }>('select status from equipment where id=$1', [equipment]))
+        ?.status,
+    ).toBe('BLOCKED');
+  });
+  it('rejects cross-tenant foreign keys even for privileged tooling', async () => {
+    await admin();
+    const otherOrg = (await scalar<{ organization_id: string }>(
+      'select organization_id from profiles where id=$1',
+      [outsider],
+    ))!.organization_id;
+    await expect(
+      db.query(
+        'insert into equipment_assignments(organization_id,equipment_id,branch_id) values($1,$2,$3)',
+        [otherOrg, equipment, branch],
+      ),
+    ).rejects.toThrow();
+    await asUser();
+  });
+  it('counts completed plans once and keeps dashboard aggregates inside RLS', async () => {
+    await expect(db.query('select dashboard_metrics(current_date)')).rejects.toThrow(
+      'Not authorized',
+    );
+    await admin();
+    await db.query("update profiles set role='SUPERVISOR' where id=$1", [user]);
+    await asUser();
+    const row = await scalar<{ metrics: { equipment: number; completed: number } }>(
+      'select dashboard_metrics(current_date) metrics',
+    );
+    expect(row?.metrics.equipment).toBe(7);
+    expect(row?.metrics.completed).toBe(1);
+    await asUser(outsider);
+    expect(
+      (
+        await scalar<{ metrics: { equipment: number } }>(
+          'select dashboard_metrics(current_date) metrics',
+        )
+      )?.metrics.equipment,
+    ).toBe(0);
+    await asUser();
+  });
+  it('denies an otherwise branch-authorized maintenance role inspection mutations', async () => {
+    await admin();
+    await db.query("update profiles set role='MANTENIMIENTO' where id=$1", [user]);
+    await asUser();
+    await expect(db.query('select start_inspection($1)', [schedule])).rejects.toThrow(
+      'Not authorized',
+    );
+    await admin();
+    await db.query("update profiles set role='OPERARIO' where id=$1", [user]);
+    await asUser();
+  });
   it('honors revoked access immediately', async () => {
     await admin();
     await db.query('update profiles set active=false where id=$1', [user]);
