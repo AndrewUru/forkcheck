@@ -3,10 +3,11 @@ import { ScanLine } from 'lucide-react';
 import { session } from '@/lib/auth/session';
 import { parseFilters, type SearchParams } from '@/lib/validations/filters';
 import { EquipmentList } from '@/components/equipment/list';
+import { MyEquipment } from '@/components/equipment/my-equipment';
 export default async function EquipmentPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const f = parseFilters(params);
-  const { db } = await session();
+  const { db, profile } = await session();
   let query = db
     .from('equipment_overview')
     .select('*', { count: 'exact' })
@@ -14,13 +15,15 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Se
     .range((f.page - 1) * 12, f.page * 12 - 1);
   if (f.q) query = query.ilike('internal_code', `%${f.q.replace(/[%_]/g, '')}%`);
   if (f.branch) query = query.eq('branch_id', f.branch);
+  if (f.fleet === 'active') query = query.neq('status', 'INACTIVE');
+  if (f.fleet === 'inactive') query = query.eq('status', 'INACTIVE');
   const [result, branches] = await Promise.all([
     query,
     db.from('branches').select('*').order('name'),
   ]);
   if (result.error || branches.error) throw new Error('No se pudo cargar la flota');
   const link = (page: number) =>
-    `/equipment?${new URLSearchParams({ q: f.q, branch: f.branch ?? '', page: String(page) })}`;
+    `/equipment?${new URLSearchParams({ q: f.q, branch: f.branch ?? '', fleet: f.fleet, page: String(page) })}`;
   return (
     <>
       <div className="page-heading">
@@ -29,10 +32,18 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Se
           <h1>Equipos</h1>
           <p>Consulta el estado de tus equipos e inicia una revisión.</p>
         </div>
-        <Link className="button primary" href="/scan">
-          <ScanLine size={18} /> Acceso por QR
-        </Link>
+        <div className="heading-actions">
+          {profile.role === 'CORPORATE_ADMIN' && (
+            <Link className="button primary" href="/admin/equipment/new">
+              + Nuevo equipo
+            </Link>
+          )}
+          <Link className="button" href="/scan">
+            <ScanLine size={18} /> Acceso por QR
+          </Link>
+        </div>
       </div>
+      <MyEquipment />
       {params.error && (
         <p className="alert" role="alert">
           No se pudo iniciar la revisión. Puede haber otro operario inspeccionando el equipo, un
@@ -53,6 +64,14 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Se
                 {b.name}
               </option>
             ))}
+          </select>
+        </label>
+        <label>
+          Mostrar
+          <select name="fleet" defaultValue={f.fleet}>
+            <option value="active">Flota activa</option>
+            <option value="inactive">Bajas e inactivos</option>
+            <option value="all">Todos, incluido histórico</option>
           </select>
         </label>
         <button className="button dark">Buscar</button>

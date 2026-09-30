@@ -10,6 +10,7 @@ const p: Profile = {
   last_name: 'López',
   role: 'OPERARIO',
   active: true,
+  nickname: null,
 };
 describe('authorization', () => {
   it('allows inspection but not corporate management for operators', () => {

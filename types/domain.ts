@@ -22,6 +22,7 @@ export interface Profile {
   last_name: string;
   role: Role;
   active: boolean;
+  nickname: string | null;
 }
 export interface Equipment {
   id: string;
@@ -36,6 +37,8 @@ export interface Equipment {
   status: EquipmentStatus;
   created_at: string;
   updated_at: string;
+  retired_at: string | null;
+  retirement_reason: string | null;
 }
 export interface EquipmentOverview extends Equipment {
   type_name: string;

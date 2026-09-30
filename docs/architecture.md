@@ -18,3 +18,13 @@ Fuentes consultadas: https://nextjs.org/docs/app/api-reference/file-conventions/
 ## Preparación de la prueba técnica
 
 Se mantiene Supabase real. La instalación manual en SQL Editor se genera desde las migraciones y el seed para evitar versiones divergentes. El archivo solo admite una base nueva y ejecuta todo en una transacción. Un diagnóstico de consola valida tablas y el tipo de clave administrativa sin imprimir secretos. No se usa la clave administrativa en el runtime web.
+
+## Renovación de flota y asignación personal
+
+- CORPORATE_ADMIN gestiona altas y asignaciones personales mediante funciones SQL autorizadas. Una alta crea el equipo, su ubicación y un plan con una plantilla publicada compatible en la misma transacción.
+- Se separan las asignaciones personales (`equipment_operators`) del historial de ubicación (`equipment_assignments`). Cada usuario puede tener una asignación personal activa; varios usuarios pueden compartir un equipo por turnos. Se conserva el historial al cambiar de equipo.
+- La asignación requiere usuario activo, mismo tenant y acceso vigente a la sucursal del equipo. No amplía los permisos ya otorgados por sucursal. El usuario ve su equipo destacado y mantiene el acceso autorizado existente.
+- La interfaz y la base validan las operaciones; no se permite modificar roles, identificadores ni organización desde los nuevos formularios.
+- Se añade una migración incremental, sin reejecutar el seed ni cambiar los datos existentes. Hasta aplicarla, las pantallas nuevas informan de que la actualización está pendiente.
+- El nickname se interpreta como alias personal, opcional, de hasta 40 caracteres. Solo su propietario puede modificarlo; el nombre legal y employee_id no cambian.
+- La baja por renovación es una retirada con motivo y fecha: estado INACTIVE, fin de asignaciones personales y desactivación de planes. Se conserva la última ubicación y todo el historial. Se rechaza la baja mientras exista una inspección abierta. No se ofrece borrado irreversible del histórico sin una definición expresa de ese alcance.

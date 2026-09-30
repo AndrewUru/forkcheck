@@ -32,6 +32,15 @@ export interface Database {
       zones: Table<Named & { branch_id: string }>;
       user_branches: Table<{ organization_id: string; user_id: string; branch_id: string }>;
       equipment_types: Table<Named>;
+      equipment_operators: Table<
+        Tenant & {
+          equipment_id: string;
+          user_id: string;
+          assigned_by: string;
+          started_at: string;
+          ended_at: string | null;
+        }
+      >;
       equipment: Table<Equipment>;
       equipment_assignments: Table<
         Tenant & {
@@ -117,6 +126,20 @@ export interface Database {
     };
     Views: { equipment_overview: { Row: Row<EquipmentOverview>; Relationships: [] } };
     Functions: {
+      update_my_nickname: { Args: { p_nickname: string }; Returns: string | null };
+      retire_equipment: {
+        Args: { p_public_code: string; p_confirm_code: string; p_reason: string };
+        Returns: string;
+      };
+      create_equipment: { Args: { p_input: Json }; Returns: string };
+      assign_equipment: {
+        Args: {
+          p_employee_id: string;
+          p_equipment_code: string;
+          p_expected_assignment: string | null;
+        };
+        Returns: string | null;
+      };
       start_inspection: { Args: { p_schedule: string }; Returns: string };
       finish_inspection: { Args: { p_inspection: string; p_answers: Json }; Returns: string };
       dashboard_metrics: {

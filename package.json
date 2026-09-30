@@ -14,7 +14,8 @@
     "provision:user": "tsx --env-file=.env.local scripts/provision-user.ts",
     "format": "prettier --write .",
     "setup:trial": "tsx scripts/prepare-trial.ts",
-    "doctor": "tsx --env-file=.env.local scripts/doctor.ts"
+    "doctor": "tsx --env-file=.env.local scripts/doctor.ts",
+    "setup:fleet": "tsx scripts/prepare-fleet-upgrade.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

@@ -1,4 +1,67 @@
 @import 'tailwindcss';
+.heading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.management-form fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.management-form label {
+  margin-bottom: 18px;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 20px;
+}
+.my-equipment {
+  margin: 0 0 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-left: 4px solid #90b272;
+}
+.my-equipment p:last-child {
+  margin: 0;
+}
+.profile-panel {
+  max-width: 620px;
+  margin-bottom: 24px;
+}
+.retirement-panel {
+  margin-top: 26px;
+}
+.retirement-panel > p {
+  max-width: 740px;
+}
+.danger-button {
+  color: #a32e30;
+  border-color: #d79898;
+  background: #fff4f3;
+}
+.assignment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.assignment-form > small {
+  color: #687779;
+}
+.assignment-form p {
+  margin-bottom: 0;
+}
+@media (min-width: 640px) {
+  .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 :root {
   --bg: #f5f6f8;
   --ink: #182d31;

@@ -1,0 +1,29 @@
+import { session } from '@/lib/auth/session';
+import { NicknameForm } from '@/components/profile/nickname-form';
+import { MyEquipment } from '@/components/equipment/my-equipment';
+import { FleetUpdateNotice } from '@/components/equipment/update-notice';
+export default async function ProfilePage() {
+  const { profile } = await session();
+  return (
+    <>
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">MI CUENTA</p>
+          <h1>Mi perfil</h1>
+          <p>
+            {profile.first_name} {profile.last_name} · ID {profile.employee_id}
+          </p>
+        </div>
+      </div>
+      {profile.nickname === undefined ? (
+        <FleetUpdateNotice />
+      ) : (
+        <section className="panel detail-panel profile-panel">
+          <h2>Cómo apareces en la aplicación</h2>
+          <NicknameForm nickname={profile.nickname} />
+        </section>
+      )}
+      <MyEquipment />
+    </>
+  );
+}

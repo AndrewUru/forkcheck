@@ -350,14 +350,14 @@ describe('real PostgreSQL migrations, RLS and transactional workflow', () => {
     await asUser();
   });
   it('counts completed plans once and keeps dashboard aggregates inside RLS', async () => {
-    await expect(db.query('select dashboard_metrics(current_date)')).rejects.toThrow(
-      'Not authorized',
-    );
+    await expect(
+      db.query("select dashboard_metrics((now() at time zone 'Europe/Madrid')::date)"),
+    ).rejects.toThrow('Not authorized');
     await admin();
     await db.query("update profiles set role='SUPERVISOR' where id=$1", [user]);
     await asUser();
     const row = await scalar<{ metrics: { equipment: number; completed: number } }>(
-      'select dashboard_metrics(current_date) metrics',
+      "select dashboard_metrics((now() at time zone 'Europe/Madrid')::date) metrics",
     );
     expect(row?.metrics.equipment).toBe(7);
     expect(row?.metrics.completed).toBe(1);
@@ -365,7 +365,7 @@ describe('real PostgreSQL migrations, RLS and transactional workflow', () => {
     expect(
       (
         await scalar<{ metrics: { equipment: number } }>(
-          'select dashboard_metrics(current_date) metrics',
+          "select dashboard_metrics((now() at time zone 'Europe/Madrid')::date) metrics",
         )
       )?.metrics.equipment,
     ).toBe(0);

@@ -7,6 +7,8 @@ import {
   LogOut,
   Building2,
   ScanLine,
+  Users,
+  UserRound,
 } from 'lucide-react';
 import { logout } from '@/app/actions';
 import { can } from '@/lib/permissions';
@@ -31,6 +33,11 @@ export function Shell({ profile, children }: { profile: Profile; children: React
           <Link href="/equipment">
             <Truck size={19} /> Equipos
           </Link>
+          {can(profile, 'configure') && (
+            <Link href="/admin/assignments">
+              <Users size={19} /> Asignaciones
+            </Link>
+          )}
           <Link href="/incidents">
             <AlertTriangle size={19} /> Incidencias
           </Link>
@@ -42,6 +49,9 @@ export function Shell({ profile, children }: { profile: Profile; children: React
           <Link href="/scan">
             <ScanLine size={19} /> Acceso por QR
           </Link>
+          <Link href="/profile">
+            <UserRound size={19} /> Mi perfil
+          </Link>
         </nav>
         <div className="sidebar-bottom">
           <div className="avatar">
@@ -49,9 +59,7 @@ export function Shell({ profile, children }: { profile: Profile; children: React
             {profile.last_name[0]}
           </div>
           <div>
-            <strong>
-              {profile.first_name} {profile.last_name}
-            </strong>
+            <strong>{profile.nickname || `${profile.first_name} ${profile.last_name}`}</strong>
             <small>{profile.role.replaceAll('_', ' ')}</small>
           </div>
           <form action={logout}>

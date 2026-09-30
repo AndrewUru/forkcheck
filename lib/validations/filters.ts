@@ -18,6 +18,7 @@ export const filterSchema = z.object({
   q: z.string().trim().max(60).default(''),
   page: z.coerce.number().int().min(1).max(100000).default(1),
   sort: z.enum(['name', 'region']).default('name'),
+  fleet: z.enum(['active', 'inactive', 'all']).default('active'),
 });
 export type Filters = z.infer<typeof filterSchema>;
 export type SearchParams = Promise<Record<string, string | string[] | undefined>>;

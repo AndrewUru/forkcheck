@@ -8,6 +8,7 @@ import { session } from '@/lib/auth/session';
 import { can } from '@/lib/permissions';
 import { startInspection } from '@/app/actions';
 import { Empty, Status } from '@/components/ui/status';
+import { RetireEquipmentForm } from '@/components/equipment/retire-form';
 export default async function EquipmentDetail({
   params,
 }: {
@@ -77,6 +78,14 @@ export default async function EquipmentDetail({
         </div>
         <Status status={e.status} />
       </div>
+      {e.retired_at && (
+        <div className="info-note">
+          <strong>
+            Equipo retirado de la flota el {new Date(e.retired_at).toLocaleDateString('es-ES')}.
+          </strong>
+          <p>Motivo: {e.retirement_reason}. El historial se conserva para consulta.</p>
+        </div>
+      )}
       {e.status === 'BLOCKED' && (
         <div className="alert">
           <strong>Equipo bloqueado. No utilizar.</strong> La revisión no autoriza su puesta en
@@ -88,7 +97,7 @@ export default async function EquipmentDetail({
           <h2>Información del activo</h2>
           <dl className="details-grid">
             <div>
-              <dt>Ubicación actual</dt>
+              <dt>{e.retired_at ? 'Última ubicación' : 'Ubicación actual'}</dt>
               <dd>
                 <MapPin size={16} /> {e.branch_name ?? 'Sin asignar'} · {e.zone_name ?? 'Sin zona'}
               </dd>
@@ -164,8 +173,10 @@ export default async function EquipmentDetail({
             </div>
           ))
         ) : (
-          <Empty title="Sin plan de revisión">
-            El administrador debe asignar una plantilla publicada.
+          <Empty title={e.retired_at ? 'Equipo retirado' : 'Sin plan de revisión'}>
+            {e.retired_at
+              ? 'Los planes de revisión se desactivaron al dar de baja el equipo.'
+              : 'El administrador debe asignar una plantilla publicada.'}
           </Empty>
         )}
       </section>
@@ -232,6 +243,9 @@ export default async function EquipmentDetail({
           ))}
         </section>
       </div>
+      {profile.role === 'CORPORATE_ADMIN' && e.retired_at === null && (
+        <RetireEquipmentForm publicCode={e.public_code} internalCode={e.internal_code} />
+      )}
     </>
   );
 }
