@@ -8,9 +8,17 @@ export default async function AssistantPage({
 }: {
   searchParams: Promise<{ equipment?: string }>;
 }) {
-  const { profile } = await session();
+  const { db, profile } = await session();
   const code = (await searchParams).equipment;
-  const publicCode = code && /^[a-zA-Z0-9-]{4,80}$/.test(code) ? code : undefined;
+  const candidate = code && /^[a-zA-Z0-9-]{4,80}$/.test(code) ? code : undefined;
+  const { data: selected } = candidate
+    ? await db
+        .from('equipment')
+        .select('public_code,internal_code')
+        .eq('public_code', candidate)
+        .maybeSingle()
+    : { data: null };
+  const publicCode = selected?.public_code;
   return (
     <>
       <div className="page-heading">
@@ -20,9 +28,9 @@ export default async function AssistantPage({
           <p>Pregunta por inspecciones, incidencias o el estado de la flota.</p>
         </div>
       </div>
-      {publicCode && (
+      {selected && (
         <p className="info-note">
-          Equipo seleccionado: <strong>{publicCode}</strong> ·{' '}
+          Equipo seleccionado: <strong>{selected.internal_code}</strong> ·{' '}
           <Link href="/assistant">Quitar filtro</Link>
         </p>
       )}

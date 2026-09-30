@@ -10,20 +10,30 @@ const historyInput = z
     limit: z.number().int().min(1).max(20).default(10),
   })
   .strict();
-/** Trusted backend context only. A future model gets this tool, never SQL or an admin client. */
+/** Trusted backend context only. The model gets this tool, never SQL or an admin client. */
 export async function equipmentHistoryTool(
   context: { db: SupabaseClient<Database>; profile: Profile },
   input: unknown,
 ) {
   const args = historyInput.parse(input);
   if (!context.profile.active) throw new Error('Not authorized');
-  const { data: equipment, error } = await context.db
+  const { data: byPublicCode, error: publicError } = await context.db
     .from('equipment')
     .select('*')
     .eq('organization_id', context.profile.organization_id)
     .eq('public_code', args.publicCode)
-    .single();
-  if (error) throw new Error('Equipment unavailable');
+    .maybeSingle();
+  if (publicError) throw new Error('Equipment unavailable');
+  const fallback = byPublicCode
+    ? null
+    : await context.db
+        .from('equipment')
+        .select('*')
+        .eq('organization_id', context.profile.organization_id)
+        .eq('internal_code', args.publicCode)
+        .maybeSingle();
+  const equipment = byPublicCode ?? fallback?.data;
+  if (fallback?.error || !equipment) throw new Error('Equipment unavailable');
   const { data: incidents, error: incidentError } = await context.db
     .from('incidents')
     .select('title,description,severity,status,created_at')
@@ -62,15 +72,64 @@ export async function recentIncidentsTool(
     .order('created_at', { ascending: false })
     .limit(limit);
   if (error) throw new Error('Incidents unavailable');
-  return { incidents: data, limit, note: 'Solo los registros más recientes visibles al usuario.' };
+  const ids = [...new Set(data.map((incident) => incident.equipment_id))];
+  const { data: equipment, error: equipmentError } = ids.length
+    ? await context.db
+        .from('equipment')
+        .select('id,internal_code')
+        .eq('organization_id', context.profile.organization_id)
+        .in('id', ids)
+    : { data: [], error: null };
+  if (equipmentError) throw new Error('Equipment unavailable');
+  const codes = new Map(equipment.map((item) => [item.id, item.internal_code]));
+  return {
+    incidents: data.map(({ equipment_id, ...incident }) => ({
+      ...incident,
+      equipment: codes.get(equipment_id) ?? 'Equipo no disponible',
+    })),
+    limit,
+    note: 'Solo los registros más recientes visibles al usuario.',
+  };
 }
 
-const metricsInput = z.object({ branchId: z.uuid().nullable().default(null) }).strict();
+const metricsInput = z
+  .object({
+    branchId: z.uuid().optional(),
+    brand: z.string().trim().min(1).max(60).optional(),
+    model: z.string().trim().min(1).max(80).optional(),
+  })
+  .strict();
+const branchInput = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(2)
+      .max(40)
+      .regex(/^[\p{L}\p{N} -]+$/u),
+  })
+  .strict();
+export async function findBranchesTool(
+  context: { db: SupabaseClient<Database>; profile: Profile },
+  input: unknown,
+) {
+  const { name } = branchInput.parse(input);
+  if (!can(context.profile, 'dashboard')) throw new Error('Not authorized');
+  const { data, error } = await context.db
+    .from('branches')
+    .select('id,name')
+    .eq('organization_id', context.profile.organization_id)
+    .ilike('name', `%${name}%`)
+    .order('name')
+    .limit(10);
+  if (error) throw new Error('Branches unavailable');
+  return { branches: data };
+}
 export async function dashboardMetricsTool(
   context: { db: SupabaseClient<Database>; profile: Profile },
   input: unknown,
 ) {
-  const { branchId } = metricsInput.parse(input);
+  const { branchId, brand, model } = metricsInput.parse(input);
   if (!can(context.profile, 'dashboard')) throw new Error('Not authorized');
   const { data: organization, error: orgError } = await context.db
     .from('organizations')
@@ -84,7 +143,15 @@ export async function dashboardMetricsTool(
   const { data, error } = await context.db.rpc('dashboard_metrics', {
     p_date: date,
     ...(branchId ? { p_branch: branchId } : {}),
+    ...(brand ? { p_brand: brand } : {}),
+    ...(model ? { p_model: model } : {}),
   });
   if (error) throw new Error('Metrics unavailable');
-  return { date, branchId, metrics: data };
+  return {
+    date,
+    branchId: branchId ?? null,
+    brand: brand ?? null,
+    model: model ?? null,
+    metrics: data,
+  };
 }

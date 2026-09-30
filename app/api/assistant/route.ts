@@ -48,7 +48,16 @@ export async function POST(request: Request) {
       ? `Equipo en pantalla: ${input.publicCode}. Pregunta: ${input.question}`
       : input.question;
     const result = await assistant.generate({ prompt });
-    if (!result.text.trim()) throw new Error('Empty response');
+    if (result.finishReason === 'length')
+      return Response.json(
+        { error: 'La respuesta quedó incompleta. Prueba con una pregunta más concreta.' },
+        { status: 502 },
+      );
+    if (!result.text.trim())
+      return Response.json(
+        { error: 'El asistente no produjo una respuesta. Inténtalo de nuevo.' },
+        { status: 502 },
+      );
     return Response.json({ answer: result.text }, { headers: { 'Cache-Control': 'no-store' } });
   } catch {
     return Response.json(

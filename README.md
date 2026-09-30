@@ -13,7 +13,7 @@ Primera entrega de una aplicación empresarial de inspección y control de equip
 - Bucket privado de evidencias; subida con decodificación real de imagen, eliminación de EXIF, límites de tamaño y MIME. URLs de lectura firmadas de corta duración.
 - Auditoría mediante triggers; sin escritura del usuario normal.
 - Seed de desarrollo: Demo Logistics, 3 regiones, 6 sucursales, 40 equipos, Still/Linde/Toyota/Jungheinrich, 4 tipos, plantillas publicadas, estados e incidencias.
-- Contrato inicial de herramienta IA con parámetros Zod y contexto autorizado, sin proveedor ni SQL generado.
+- Asistente IA con OpenAI para historial, incidencias y KPIs autorizados; herramientas de lectura con parámetros Zod, sin SQL generado.
 
 No hay un modo de demostración que sustituya la base de datos. Sin variables de Supabase se muestra `/setup`.
 
@@ -77,7 +77,9 @@ El script usa `auth.admin.createUser`, crea el perfil y valida las sucursales co
 | CORPORATE_ADMIN  | Lectura y operación en su organización completa                                  |
 | SUPERADMIN       | Sin bypass multi-tenant; reservado para administración técnica                   |
 
-Las pantallas para altas de equipos, configuración de plantillas, usuarios y actualizaciones de mantenimiento quedan fuera de esta primera entrega. Las escrituras administrativas se realizan por tooling de confianza; **no se conceden permisos SQL amplios al navegador** para suplir pantallas pendientes. La administración técnica de plataforma no confiere lectura global de tenants.
+CORPORATE_ADMIN puede dar de alta y retirar equipos, y asignar un equipo activo a cada usuario mediante las pantallas de flota. La retirada conserva el historial y desactiva los planes. El usuario puede editar su nickname en «Mi perfil». Estas funciones requieren aplicar las migraciones incrementales de flota en Supabase. La configuración de plantillas, usuarios y actualizaciones de mantenimiento sigue fuera de esta entrega; **no se conceden permisos SQL amplios al navegador**. La administración técnica de plataforma no confiere lectura global de tenants.
+
+Para actualizar el proyecto Supabase ya existente sin volver a ejecutar el seed, ejecuta `npm run setup:fleet` y pega el contenido de `artifacts/update-fleet.sql` en su SQL Editor. Ejecuta el bloque una sola vez; después recarga la app. La actualización debe aplicarse con acceso de propietario a ese proyecto.
 
 ## Datos y garantías
 
@@ -139,10 +141,10 @@ El smoke test de navegador utiliza una instancia sin credenciales y comprueba es
 
 1. Crear el proyecto Supabase del entorno correspondiente. Aplicar las migraciones con `supabase link --project-ref …` y `supabase db push`, revisando el destino; no ejecutar el seed en producción.
 2. Crear la organización y jerarquía inicial con tooling administrativo; provisionar usuarios.
-3. Importar el repositorio en Vercel con Node 24 y el preset Next.js. Añadir solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` al entorno web.
+3. Importar el repositorio en Vercel con Node 24 y el preset Next.js. Añadir `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; para el asistente, añadir `OPENAI_API_KEY` como secreto solo de servidor.
 4. Configurar URL de sitio en Supabase Auth, HTTPS y controles operativos de copias de seguridad/retención. El alta pública permanece desactivada.
 5. Ejecutar la validación de integración con usuarios de alcances distintos antes de uso operativo.
 
-Se incluye manifest e iconos instalables. No hay service worker que cachee datos empresariales ni sincronización offline. `lib/ai` prepara herramientas limitadas a la sesión; no se llama todavía a OpenAI.
+Se incluye manifest e iconos instalables. No hay service worker que cachee datos empresariales ni sincronización offline. El asistente de `/assistant` usa `OPENAI_API_KEY` solo en el servidor y consultas limitadas por RLS. Sin esa variable muestra un error de configuración. `OPENAI_MODEL` permite elegir el modelo; el valor por defecto es `gpt-5-mini`.
 
 Decisiones y límites: [docs/architecture.md](docs/architecture.md). Reglas para agentes: [AGENTS.md](AGENTS.md).
