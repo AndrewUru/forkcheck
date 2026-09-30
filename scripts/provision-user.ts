@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { employeeEmail } from '../lib/validations/inspection';
 import { roles } from '../types/domain';
 import type { Database } from '../types/database';
+import { assertAdminKey } from './admin-key';
+assertAdminKey(process.env.SUPABASE_SERVICE_ROLE_KEY);
 const input = z
   .object({
     url: z.url(),
@@ -52,30 +54,26 @@ const { data, error } = await db.auth.admin.createUser({
 });
 if (error)
   throw new Error('Auth user could not be created (check whether employee already exists)');
-const { error: profileError } = await db
-  .from('profiles')
-  .insert({
-    id: data.user.id,
-    organization_id: org.id,
-    employee_id: input.employee,
-    first_name: input.first,
-    last_name: input.last,
-    role: input.role,
-  });
+const { error: profileError } = await db.from('profiles').insert({
+  id: data.user.id,
+  organization_id: org.id,
+  employee_id: input.employee,
+  first_name: input.first,
+  last_name: input.last,
+  role: input.role,
+});
 if (profileError) {
   await db.auth.admin.deleteUser(data.user.id);
   throw new Error('Profile creation failed; Auth identity rolled back');
 }
 if (input.branches.length) {
-  const { error } = await db
-    .from('user_branches')
-    .insert(
-      input.branches.map((branch_id) => ({
-        organization_id: org.id,
-        user_id: data.user.id,
-        branch_id,
-      })),
-    );
+  const { error } = await db.from('user_branches').insert(
+    input.branches.map((branch_id) => ({
+      organization_id: org.id,
+      user_id: data.user.id,
+      branch_id,
+    })),
+  );
   if (error) {
     await db.from('profiles').update({ active: false }).eq('id', data.user.id);
     throw new Error('Branch assignment failed; profile disabled');

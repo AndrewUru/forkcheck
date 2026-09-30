@@ -14,3 +14,7 @@
 - Pantallas administrativas avanzadas (editor de plantillas, usuarios, órdenes de mantenimiento, comparativas) se reservan para entregas posteriores; esquema preparado y sin botones que simulen operaciones.
 
 Fuentes consultadas: https://nextjs.org/docs/app/api-reference/file-conventions/proxy y https://supabase.com/docs/guides/auth/server-side/creating-a-client
+
+## Preparación de la prueba técnica
+
+Se mantiene Supabase real. La instalación manual en SQL Editor se genera desde las migraciones y el seed para evitar versiones divergentes. El archivo solo admite una base nueva y ejecuta todo en una transacción. Un diagnóstico de consola valida tablas y el tipo de clave administrativa sin imprimir secretos. No se usa la clave administrativa en el runtime web.

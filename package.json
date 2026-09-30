@@ -12,7 +12,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "provision:user": "tsx --env-file=.env.local scripts/provision-user.ts",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "setup:trial": "tsx scripts/prepare-trial.ts",
+    "doctor": "tsx --env-file=.env.local scripts/doctor.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
