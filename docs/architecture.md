@@ -28,3 +28,9 @@ Se mantiene Supabase real. La instalación manual en SQL Editor se genera desde 
 - Se añade una migración incremental, sin reejecutar el seed ni cambiar los datos existentes. Hasta aplicarla, las pantallas nuevas informan de que la actualización está pendiente.
 - El nickname se interpreta como alias personal, opcional, de hasta 40 caracteres. Solo su propietario puede modificarlo; el nombre legal y employee_id no cambian.
 - La baja por renovación es una retirada con motivo y fecha: estado INACTIVE, fin de asignaciones personales y desactivación de planes. Se conserva la última ubicación y todo el historial. Se rechaza la baja mientras exista una inspección abierta. No se ofrece borrado irreversible del histórico sin una definición expresa de ese alcance.
+
+## Asistente de IA
+
+- El asistente usa OpenAI desde el servidor, con la clave solo en `OPENAI_API_KEY`. Cada petición autentica de nuevo al usuario y carga su perfil activo; nunca recibe organización ni rol del navegador.
+- Las herramientas son lecturas acotadas y validadas: historial de un equipo, incidencias recientes autorizadas y métricas del dashboard para roles con permiso. Utilizan el cliente Supabase del usuario, por lo que RLS sigue siendo la autoridad. No se ofrece SQL libre ni herramientas de escritura.
+- El modelo recibe solo los datos devueltos por las herramientas; sus respuestas no autorizan el uso de un equipo ni sustituyen una inspección. Las conversaciones no se persisten. Se limita la entrada, la salida y el número de pasos por petición.

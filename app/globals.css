@@ -1,4 +1,57 @@
 @import 'tailwindcss';
+.assistant-panel {
+  max-width: 900px;
+}
+.assistant-layout {
+  display: grid;
+  gap: 22px;
+}
+.assistant-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.assistant-suggestions .button {
+  white-space: normal;
+  text-align: left;
+}
+.assistant-conversation {
+  display: grid;
+  gap: 16px;
+}
+.assistant-exchange {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.assistant-answer {
+  background: #f3f7f3;
+  border-left: 3px solid var(--green);
+  padding: 14px 18px;
+  white-space: pre-wrap;
+}
+.assistant-answer p {
+  margin: 8px 0 0;
+}
+.assistant-compose {
+  display: grid;
+  gap: 10px;
+}
+.assistant-compose textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  resize: vertical;
+}
+.assistant-compose .button {
+  justify-self: start;
+}
+.assistant-footnote {
+  max-width: 900px;
+  margin-top: 16px;
+}
 .heading-actions {
   display: flex;
   flex-wrap: wrap;

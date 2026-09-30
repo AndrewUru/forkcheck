@@ -78,6 +78,9 @@ export default async function EquipmentDetail({
         </div>
         <Status status={e.status} />
       </div>
+      <Link className="button" href={`/assistant?equipment=${encodeURIComponent(e.public_code)}`}>
+        Preguntar al asistente sobre este equipo
+      </Link>
       {e.retired_at && (
         <div className="info-note">
           <strong>

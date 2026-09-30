@@ -9,6 +9,7 @@ import {
   ScanLine,
   Users,
   UserRound,
+  Sparkles,
 } from 'lucide-react';
 import { logout } from '@/app/actions';
 import { can } from '@/lib/permissions';
@@ -40,6 +41,9 @@ export function Shell({ profile, children }: { profile: Profile; children: React
           )}
           <Link href="/incidents">
             <AlertTriangle size={19} /> Incidencias
+          </Link>
+          <Link href="/assistant">
+            <Sparkles size={19} /> Asistente IA
           </Link>
           {can(profile, 'dashboard') && (
             <Link href="/admin/branches">
