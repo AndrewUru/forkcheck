@@ -10,6 +10,7 @@ import {
   Users,
   UserRound,
   Sparkles,
+  CalendarDays,
 } from 'lucide-react';
 import { logout } from '@/app/actions';
 import { can } from '@/lib/permissions';
@@ -34,6 +35,9 @@ export function Shell({ profile, children }: { profile: Profile; children: React
           <Link href="/equipment">
             <Truck size={19} /> Equipos
           </Link>
+          <Link href="/calendar">
+            <CalendarDays size={19} /> Calendario diario
+          </Link>
           {can(profile, 'configure') && (
             <Link href="/admin/assignments">
               <Users size={19} /> Asignaciones
@@ -41,6 +45,9 @@ export function Shell({ profile, children }: { profile: Profile; children: React
           )}
           <Link href="/incidents">
             <AlertTriangle size={19} /> Incidencias
+          </Link>
+          <Link href="/providers">
+            <Building2 size={19} /> Proveedores de renting
           </Link>
           <Link href="/assistant">
             <Sparkles size={19} /> Asistente IA

@@ -34,3 +34,14 @@ Se mantiene Supabase real. La instalación manual en SQL Editor se genera desde 
 - El asistente usa OpenAI desde el servidor, con la clave solo en `OPENAI_API_KEY`. Cada petición autentica de nuevo al usuario y carga su perfil activo; nunca recibe organización ni rol del navegador.
 - Las herramientas son lecturas acotadas y validadas: historial de un equipo, incidencias recientes autorizadas y métricas del dashboard para roles con permiso. Utilizan el cliente Supabase del usuario, por lo que RLS sigue siendo la autoridad. No se ofrece SQL libre ni herramientas de escritura.
 - El modelo recibe solo los datos devueltos por las herramientas; sus respuestas no autorizan el uso de un equipo ni sustituyen una inspección. Las conversaciones no se persisten. Se limita la entrada, la salida y el número de pasos por petición.
+
+## Calendario diario
+
+- Todos los perfiles activos acceden al calendario con su alcance habitual de RLS. Se muestran los equipos con próxima revisión y las inspecciones completadas en la fecha seleccionada, con paginación independiente.
+- Hoy incluye equipos con revisiones atrasadas. En fechas futuras se muestra la próxima revisión ya programada, sin inventar recurrencias. Las fechas pasadas muestran inspecciones realizadas: la programación actual no reconstruye pendientes históricos.
+- La fecha y los límites del día se calculan en la zona horaria de la organización, incluidos los cambios de horario. Esta pantalla usa tablas y vistas existentes y no requiere una migración.
+
+## Proveedores de renting
+
+- La empresa de renting realiza el mantenimiento; la organización registra inspecciones y reportes. El directorio guarda proveedores reales y sus contactos, sin datos de muestra ni envío automático de reportes.
+- Los perfiles activos consultan los contactos de su organización. CORPORATE_ADMIN crea, edita y desactiva proveedores mediante una RPC autorizada y auditada. No se permite escritura directa desde el cliente ni borrado del histórico.

@@ -1,4 +1,13 @@
 @import 'tailwindcss';
+.calendar-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin: 24px 0; }
+.calendar-day { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 86px; border: 1px solid var(--line); border-radius: 8px; background: white; }
+.calendar-day strong { font-size: 22px; }
+.calendar-day small { font-size: 10px; }
+.calendar-day.selected { background: var(--dark); color: white; border-color: var(--dark); }
+.calendar-row { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.calendar-row > div:first-child { flex: 1; min-width: 180px; }
+.calendar-row p { margin: 4px 0; }
+.calendar-completed { margin-top: 24px; }
 .assistant-panel {
   max-width: 900px;
 }

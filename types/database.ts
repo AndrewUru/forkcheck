@@ -19,6 +19,7 @@ type Table<T> = {
 export interface Database {
   public: {
     Tables: {
+      providers: Table<Tenant & { name: string; contact_name: string; phone: string; email: string; notes: string; active: boolean; created_at: string; updated_at: string }>;
       organizations: Table<{
         id: string;
         name: string;
@@ -126,6 +127,7 @@ export interface Database {
     };
     Views: { equipment_overview: { Row: Row<EquipmentOverview>; Relationships: [] } };
     Functions: {
+      save_provider: { Args: { p_input: Json; p_id: string | null }; Returns: string };
       update_my_nickname: { Args: { p_nickname: string }; Returns: string | null };
       retire_equipment: {
         Args: { p_public_code: string; p_confirm_code: string; p_reason: string };
