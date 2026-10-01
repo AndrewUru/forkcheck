@@ -45,3 +45,15 @@ Se mantiene Supabase real. La instalación manual en SQL Editor se genera desde 
 
 - La empresa de renting realiza el mantenimiento; la organización registra inspecciones y reportes. El directorio guarda proveedores reales y sus contactos, sin datos de muestra ni envío automático de reportes.
 - Los perfiles activos consultan los contactos de su organización. CORPORATE_ADMIN crea, edita y desactiva proveedores mediante una RPC autorizada y auditada. No se permite escritura directa desde el cliente ni borrado del histórico.
+
+## Administración de usuarios
+
+- Se amplía expresamente el alcance con altas y bajas para CORPORATE_ADMIN. La ficha de cada equipo muestra sus asignaciones personales con paginación.
+- El alta Auth se ejecuta en una Edge Function de Supabase: la clave administrativa queda exclusivamente en ese runtime, nunca en Next.js. La función verifica la sesión; una RPC vuelve a comprobar el administrador activo, deriva la organización y valida rol y sucursales antes de crear perfil, alcance y auditoría en una transacción. Si falla, se elimina la identidad Auth recién creada.
+- Eliminar significa dar de baja: desactivar el perfil y cerrar asignaciones personales en una transacción auditada. Se conserva Auth y el histórico; no se permite la baja propia. No se ofrece reactivación ni borrado irreversible.
+- La migración y la función requieren instalación explícita; no se despliegan automáticamente.
+
+## Paleta visual
+
+- Se aplica la referencia visual facilitada: azul principal #0047AB, azul oscuro #083D82, blanco y amarillo #E9AB19. Cian #008EC4, verde #00AC83, rojo #E40036 y violeta #6B56A2 quedan como acentos secundarios.
+- Los colores de estado conservan su significado; los textos usan variantes oscuras para mantener contraste. La paleta se comparte entre navegación, formularios, login e iconos de la PWA mediante variables CSS.

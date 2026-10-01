@@ -9,12 +9,17 @@ import { can } from '@/lib/permissions';
 import { startInspection } from '@/app/actions';
 import { Empty, Status } from '@/components/ui/status';
 import { RetireEquipmentForm } from '@/components/equipment/retire-form';
+import { EquipmentOperators } from '@/components/equipment/operators';
+import { parseFilters, type SearchParams } from '@/lib/validations/filters';
 export default async function EquipmentDetail({
   params,
+  searchParams,
 }: {
   params: Promise<{ publicCode: string }>;
+  searchParams: SearchParams;
 }) {
   const { publicCode } = await params;
+  const filters = parseFilters(await searchParams);
   const { db, profile } = await session();
   const { data: e, error } = await db
     .from('equipment_overview')
@@ -96,6 +101,7 @@ export default async function EquipmentDetail({
         </div>
       )}
       <div className="detail-columns">
+        {can(profile, 'configure') && <EquipmentOperators equipmentId={e.id} page={filters.page} />}
         <section className="panel detail-panel">
           <h2>Información del activo</h2>
           <dl className="details-grid">

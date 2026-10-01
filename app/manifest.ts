@@ -6,8 +6,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Inspecciones y seguridad de equipos',
     start_url: '/',
     display: 'standalone',
-    background_color: '#f5f6f8',
-    theme_color: '#132b30',
+    background_color: '#F5F7FB',
+    theme_color: '#0047AB',
     lang: 'es',
     icons: [
       { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },

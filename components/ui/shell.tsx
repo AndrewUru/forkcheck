@@ -39,6 +39,11 @@ export function Shell({ profile, children }: { profile: Profile; children: React
             <CalendarDays size={19} /> Calendario diario
           </Link>
           {can(profile, 'configure') && (
+            <Link href="/admin/users">
+              <Users size={19} /> Usuarios
+            </Link>
+          )}
+          {can(profile, 'configure') && (
             <Link href="/admin/assignments">
               <Users size={19} /> Asignaciones
             </Link>

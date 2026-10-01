@@ -138,6 +138,8 @@ export interface Database {
     };
     Views: { equipment_overview: { Row: Row<EquipmentOverview>; Relationships: [] } };
     Functions: {
+      register_employee: { Args: { p_auth_id: string; p_input: Json }; Returns: string };
+      deactivate_employee: { Args: { p_user_id: string }; Returns: string };
       save_provider: { Args: { p_input: Json; p_id: string | null }; Returns: string };
       update_my_nickname: { Args: { p_nickname: string }; Returns: string | null };
       retire_equipment: {

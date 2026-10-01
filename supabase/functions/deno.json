@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "zod": "npm:zod@4.6.5",
+    "../../types/domain": "../../types/domain.ts"
+  },
+  "compilerOptions": { "strict": true }
+}
