@@ -15,7 +15,8 @@
     "format": "prettier --write .",
     "setup:trial": "tsx scripts/prepare-trial.ts",
     "doctor": "tsx --env-file=.env.local scripts/doctor.ts",
-    "setup:fleet": "tsx scripts/prepare-fleet-upgrade.ts"
+    "setup:fleet": "tsx scripts/prepare-fleet-upgrade.ts",
+    "setup:providers": "tsx scripts/prepare-providers-upgrade.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.83",

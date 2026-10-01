@@ -20,6 +20,9 @@ export default async function Incidents({ searchParams }: { searchParams: Search
           <h1>Incidencias abiertas</h1>
           <p>{count} incidencias en tus sucursales autorizadas.</p>
         </div>
+        <Link className="button" href="/providers">
+          Contactos de renting
+        </Link>
       </div>
       <section className="panel detail-panel">
         {data.length ? (

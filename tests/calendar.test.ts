@@ -4,7 +4,8 @@ import { calendarFilters, dayBounds, shiftDate } from '../lib/calendar/dates';
 describe('calendar dates', () => {
   it('uses the organization local day rather than UTC', () => {
     expect(dayBounds('2026-10-01', 'Europe/Madrid')).toEqual({
-      start: '2026-09-30T22:00:00.000Z', end: '2026-10-01T22:00:00.000Z',
+      start: '2026-09-30T22:00:00.000Z',
+      end: '2026-10-01T22:00:00.000Z',
     });
   });
   it('handles both daylight saving transitions', () => {

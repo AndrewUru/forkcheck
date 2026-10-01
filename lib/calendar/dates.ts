@@ -16,7 +16,10 @@ export function shiftDate(date: string, days: number) {
 export function dayBounds(date: string, timeZone: string) {
   z.iso.date().parse(date);
   const formatter = new Intl.DateTimeFormat('en-CA', {
-    timeZone, year: 'numeric', month: '2-digit', day: '2-digit',
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
   });
   const boundary = (target: string) => {
     const center = Date.parse(`${target}T00:00:00Z`);

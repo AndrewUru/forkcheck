@@ -19,7 +19,18 @@ type Table<T> = {
 export interface Database {
   public: {
     Tables: {
-      providers: Table<Tenant & { name: string; contact_name: string; phone: string; email: string; notes: string; active: boolean; created_at: string; updated_at: string }>;
+      providers: Table<
+        Tenant & {
+          name: string;
+          contact_name: string;
+          phone: string;
+          email: string;
+          notes: string;
+          active: boolean;
+          created_at: string;
+          updated_at: string;
+        }
+      >;
       organizations: Table<{
         id: string;
         name: string;

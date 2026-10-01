@@ -1,6 +1,6 @@
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 const names = (await readdir('supabase/migrations'))
-  .filter((name) => name.startsWith('20261001') && name.endsWith('.sql'))
+  .filter((name) => /^20261001000[1-3]_.*\.sql$/.test(name))
   .sort();
 const files = await Promise.all(
   names.map(async (name) => `-- ${name}\n${await readFile(`supabase/migrations/${name}`, 'utf8')}`),

@@ -68,6 +68,10 @@ El script usa `auth.admin.createUser`, crea el perfil y valida las sucursales co
 
 ## Roles y acceso
 
+Todos los usuarios activos pueden abrir **Calendario diario** (`/calendar`) para consultar la próxima revisión de los equipos y los reportes completados en cada fecha dentro de su alcance. Hoy incluye atrasados; los días pasados muestran las inspecciones efectivamente realizadas. La fecha utiliza la zona horaria de la organización.
+
+El mantenimiento lo realiza la empresa de renting. **Proveedores de renting** (`/providers`) permite consultar sus teléfonos, correos y notas de contacto. CORPORATE_ADMIN da de alta, edita y desactiva proveedores. Para activar el directorio en una base existente, ejecuta `npm run setup:providers` y aplica una vez `artifacts/update-providers.sql` en Supabase SQL Editor. Esta actualización es independiente de la de flota y no añade contactos ficticios.
+
 | Rol              | Alcance inicial                                                                  |
 | ---------------- | -------------------------------------------------------------------------------- |
 | OPERARIO         | Equipos/historial de sucursales explícitas, iniciar y completar sus inspecciones |

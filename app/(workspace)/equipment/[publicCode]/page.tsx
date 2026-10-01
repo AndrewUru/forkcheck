@@ -219,7 +219,11 @@ export default async function EquipmentDetail({
           )}
         </section>
         <section className="panel detail-panel">
-          <h2>Mantenimiento</h2>
+          <h2>Mantenimiento externo</h2>
+          <p>El mantenimiento corresponde a la empresa de renting.</p>
+          <Link className="text-link" href="/providers">
+            Consultar proveedores y contactos →
+          </Link>
           {orders.data?.length ? (
             orders.data.map((o) => (
               <div className="history-row" key={o.id}>
