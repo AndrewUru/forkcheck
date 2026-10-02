@@ -12,6 +12,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "provision:user": "tsx --env-file=.env.local scripts/provision-user.ts",
+    "provision:demo": "tsx --env-file=.env.local scripts/provision-demo.ts",
+    "setup:demo": "tsx scripts/prepare-demo.ts",
     "format": "prettier --write .",
     "setup:trial": "tsx scripts/prepare-trial.ts",
     "doctor": "tsx --env-file=.env.local scripts/doctor.ts",

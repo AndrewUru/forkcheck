@@ -68,6 +68,16 @@ El script usa `auth.admin.createUser`, crea el perfil y valida las sucursales co
 
 ## Roles y acceso
 
+### Demo con cinco participantes
+
+Usa un proyecto Supabase de demostración con las migraciones aplicadas. Ejecuta `npm run setup:demo` y aplica `artifacts/setup-demo.sql` en su SQL Editor. Crea `demo-testers`, cinco sucursales y diez equipos con un checklist publicado. Si la organización existe, aborta sin modificarla. No utiliza el seed ni modifica otras organizaciones.
+
+Proporciona al script administrativo la URL del proyecto de demo y `SUPABASE_SERVICE_ROLE_KEY`, junto con `DEMO_PASSWORD_1` a `DEMO_PASSWORD_5`: cinco contraseñas distintas de al menos 12 caracteres. Usa variables temporales o un gestor de secretos; no añadas la clave administrativa a Vercel. Ejecuta `npm run provision:demo`.
+
+Cada participante entra con organización **demo-testers**, ID **demo01** a **demo05** y su contraseña correspondiente. Su rol OPERARIO limita el acceso a su sucursal y sus dos equipos. Entrega las credenciales individualmente. Al repetir el alta se conservan las cuentas existentes con configuración correcta y sus contraseñas. Un error detiene el proceso; las altas anteriores permanecen. Una cuenta desactivada o con alcance diferente requiere revisión administrativa.
+
+No hay reinicio automático: inspecciones, evidencias y bloqueos permanecen. Para probar CORPORATE_ADMIN utiliza organizaciones independientes por persona.
+
 Todos los usuarios activos pueden abrir **Calendario diario** (`/calendar`) para consultar la próxima revisión de los equipos y los reportes completados en cada fecha dentro de su alcance. Hoy incluye atrasados; los días pasados muestran las inspecciones efectivamente realizadas. La fecha utiliza la zona horaria de la organización.
 
 El mantenimiento lo realiza la empresa de renting. **Proveedores de renting** (`/providers`) permite consultar sus teléfonos, correos y notas de contacto. CORPORATE_ADMIN da de alta, edita y desactiva proveedores. Para activar el directorio en una base existente, ejecuta `npm run setup:providers` y aplica una vez `artifacts/update-providers.sql` en Supabase SQL Editor. Esta actualización es independiente de la de flota y no añade contactos ficticios.

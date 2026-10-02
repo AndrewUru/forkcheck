@@ -1,5 +1,11 @@
 # Decisiones de arquitectura — primera entrega
 
+## Demostración con varios participantes
+
+- La preparación administrativa crea `demo-testers`, una organización exclusiva, cinco sucursales y dos equipos por sucursal, con checklist publicado y planes diarios. No copia datos reales ni modifica organizaciones existentes; si el slug ya existe, aborta toda la transacción.
+- Cada participante utiliza una identidad OPERARIO (`demo01` a `demo05`) con acceso a una sola sucursal. Las contraseñas distintas se suministran como secretos al script de alta, fuera del runtime web. No se comparten cuentas ni se concede administración organizacional a los participantes.
+- El alta es secuencial y admite reintentos únicamente si las cuentas existentes mantienen exactamente el rol, organización y sucursal esperados. No restablece contraseñas, equipos bloqueados ni históricos. Las pruebas de administración necesitan organizaciones independientes.
+
 - Next.js App Router con Server Components para lectura y Server Actions para mutaciones. Formularios de inspección locales; envío completo al finalizar, sin escrituras por cada pulsación.
 - PostgreSQL es la autoridad: RLS por organización y sucursal, claves foráneas compuestas y funciones transaccionales para inicio/finalización. SUPERADMIN no obtiene acceso global implícito a datos empresariales.
 - Una identidad Auth pertenece a una organización. Login por código de organización + ID de empleado mediante alias Auth determinista, sin directorio público de empleados ni contraseñas propias. Alta mediante script administrativo seguro.
