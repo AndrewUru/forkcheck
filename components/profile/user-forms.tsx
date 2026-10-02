@@ -13,7 +13,7 @@ export function CreateEmployeeForm({ branches }: { branches: { id: string; name:
           <input
             name="employee_id"
             required
-            pattern="[a-z0-9_-]{1,40}"
+            pattern="[a-z0-9_\-]{1,40}"
             maxLength={40}
             autoComplete="off"
           />

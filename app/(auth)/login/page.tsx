@@ -56,7 +56,7 @@ export default async function Login({
                 autoComplete="organization"
                 placeholder="Código de empresa"
                 required
-                pattern="[a-z0-9-]{2,40}"
+                pattern="[a-z0-9\-]{2,40}"
               />
             </label>
             <label>

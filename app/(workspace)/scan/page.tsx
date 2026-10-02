@@ -30,7 +30,7 @@ export default async function Scan({
               name="code"
               required
               placeholder="Código de la etiqueta QR"
-              pattern="[a-zA-Z0-9-]{4,80}"
+              pattern="[a-zA-Z0-9\-]{4,80}"
             />
           </label>
           {error && <p role="alert">Introduce un código válido.</p>}
