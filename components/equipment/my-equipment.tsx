@@ -18,12 +18,14 @@ export async function MyEquipment({ quickStart = false }: { quickStart?: boolean
   if (!assignment)
     return (
       <section className="panel detail-panel my-equipment">
-        <p className="eyebrow">MI CARRETILLA</p>
-        <h2>Todavía no tienes un equipo asignado</h2>
-        <p>
-          Tu administrador puede asignártelo. Puedes seguir consultando los equipos de tus
-          sucursales autorizadas.
-        </p>
+        <div>
+          <p className="eyebrow">MI CARRETILLA</p>
+          <h2>Todavía no tienes un equipo asignado</h2>
+          <p>
+            Tu administrador puede asignártelo. Puedes seguir consultando los equipos de tus
+            sucursales autorizadas.
+          </p>
+        </div>
       </section>
     );
   const { data: e, error: ee } = await db
@@ -35,11 +37,13 @@ export async function MyEquipment({ quickStart = false }: { quickStart?: boolean
   if (!e)
     return (
       <section className="panel detail-panel my-equipment">
-        <h2>Asignación pendiente de revisión</h2>
-        <p>
-          Tu equipo asignado ya no está disponible en tu alcance autorizado. Contacta con el
-          administrador.
-        </p>
+        <div>
+          <h2>Asignación pendiente de revisión</h2>
+          <p>
+            Tu equipo asignado ya no está disponible en tu alcance autorizado. Contacta con el
+            administrador.
+          </p>
+        </div>
       </section>
     );
   const [schedules, organization] = quickStart
