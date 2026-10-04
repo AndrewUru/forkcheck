@@ -2,9 +2,27 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { House, Truck, AlertTriangle, UserRound, CalendarDays, Users, Building2, ScanLine, Sparkles, LayoutDashboard, Menu } from 'lucide-react';
+import {
+  House,
+  Truck,
+  AlertTriangle,
+  UserRound,
+  CalendarDays,
+  Users,
+  Building2,
+  ScanLine,
+  Sparkles,
+  LayoutDashboard,
+  Menu,
+} from 'lucide-react';
 
-export function WorkspaceNavigation({ dashboard, configure }: { dashboard: boolean; configure: boolean }) {
+export function WorkspaceNavigation({
+  dashboard,
+  configure,
+}: {
+  dashboard: boolean;
+  configure: boolean;
+}) {
   const pathname = usePathname();
   const home = dashboard ? '/admin' : '/shift';
   const primary = [
@@ -15,39 +33,81 @@ export function WorkspaceNavigation({ dashboard, configure }: { dashboard: boole
   ];
   const secondary = [
     { href: '/calendar', label: 'Calendario diario', icon: CalendarDays },
-    ...(configure ? [{ href: '/admin/users', label: 'Usuarios', icon: Users }, { href: '/admin/assignments', label: 'Asignaciones', icon: Users }] : []),
+    ...(configure
+      ? [
+          { href: '/admin/users', label: 'Usuarios', icon: Users },
+          { href: '/admin/assignments', label: 'Asignaciones', icon: Users },
+        ]
+      : []),
     { href: '/providers', label: 'Proveedores de renting', icon: Building2 },
     { href: '/assistant', label: 'Asistente IA', icon: Sparkles },
     ...(dashboard ? [{ href: '/admin/branches', label: 'Sucursales', icon: Building2 }] : []),
     { href: '/scan', label: 'Acceso por QR', icon: ScanLine },
   ];
-  const active = (href: string) => pathname === href || (href !== home && pathname.startsWith(`${href}/`));
-  const links = (items: typeof primary) => items.map(({ href, label, icon: Icon }) => (
-    <Link key={href} href={href} aria-current={active(href) ? 'page' : undefined}><Icon size={20} aria-hidden /><span>{label}</span></Link>
-  ));
+  const active = (href: string) =>
+    pathname === href || (href !== home && pathname.startsWith(`${href}/`));
+  const links = (items: typeof primary) =>
+    items.map(({ href, label, icon: Icon }) => (
+      <Link key={href} href={href} aria-current={active(href) ? 'page' : undefined}>
+        <Icon size={20} aria-hidden />
+        <span>{label}</span>
+      </Link>
+    ));
   return (
     <>
       <nav className="desktop-navigation" aria-label="Navegación principal">
-        {links([{ href: home, label: dashboard ? 'Centro de control' : 'Mi turno', icon: dashboard ? LayoutDashboard : House }, ...primary.slice(1), ...secondary])}
+        {links([
+          {
+            href: home,
+            label: dashboard ? 'Centro de control' : 'Mi turno',
+            icon: dashboard ? LayoutDashboard : House,
+          },
+          ...primary.slice(1),
+          ...secondary,
+        ])}
       </nav>
       <details className="mobile-options">
-        <summary><Menu size={20} aria-hidden /> Más opciones</summary>
+        <summary>
+          <Menu size={20} aria-hidden /> Más opciones
+        </summary>
         <nav aria-label="Más opciones">{links(secondary)}</nav>
       </details>
-      <nav className="mobile-navigation" aria-label="Navegación móvil">{links(primary)}</nav>
+      <nav className="mobile-navigation" aria-label="Navegación móvil">
+        {links(primary)}
+      </nav>
     </>
   );
 }
 
 export function WorkspaceLocation() {
   const pathname = usePathname();
-  const label = pathname.startsWith('/inspections/') ? 'Revisión de seguridad'
-    : pathname.startsWith('/equipment/') ? 'Ficha del equipo'
-    : pathname === '/admin' ? 'Centro de control'
-    : pathname.startsWith('/admin/users') ? 'Usuarios'
-    : pathname.startsWith('/admin/assignments') ? 'Asignaciones'
-    : pathname.startsWith('/admin/branches') ? 'Sucursales'
-    : pathname.startsWith('/admin/equipment') ? 'Nuevo equipo'
-    : ({ '/shift': 'Mi turno', '/equipment': 'Equipos', '/calendar': 'Calendario diario', '/incidents': 'Incidencias', '/profile': 'Mi perfil', '/scan': 'Acceso por QR', '/providers': 'Proveedores', '/assistant': 'Asistente IA' }[pathname] ?? 'Operaciones');
-  return <span>Operaciones / <strong>{label}</strong></span>;
+  const label = pathname.startsWith('/inspections/')
+    ? 'Revisión de seguridad'
+    : pathname.startsWith('/equipment/')
+      ? 'Ficha del equipo'
+      : pathname === '/admin'
+        ? 'Centro de control'
+        : pathname.startsWith('/admin/users')
+          ? 'Usuarios'
+          : pathname.startsWith('/admin/assignments')
+            ? 'Asignaciones'
+            : pathname.startsWith('/admin/branches')
+              ? 'Sucursales'
+              : pathname.startsWith('/admin/equipment')
+                ? 'Nuevo equipo'
+                : ({
+                    '/shift': 'Mi turno',
+                    '/equipment': 'Equipos',
+                    '/calendar': 'Calendario diario',
+                    '/incidents': 'Incidencias',
+                    '/profile': 'Mi perfil',
+                    '/scan': 'Acceso por QR',
+                    '/providers': 'Proveedores',
+                    '/assistant': 'Asistente IA',
+                  }[pathname] ?? 'Operaciones');
+  return (
+    <span>
+      Operaciones / <strong>{label}</strong>
+    </span>
+  );
 }

@@ -15,7 +15,10 @@ export function Shell({ profile, children }: { profile: Profile; children: React
           forkcheck<span className="brand-dot">.</span>
         </Link>
         <div className="workspace-label">CONTROL DE OPERACIONES</div>
-        <WorkspaceNavigation dashboard={can(profile, 'dashboard')} configure={can(profile, 'configure')} />
+        <WorkspaceNavigation
+          dashboard={can(profile, 'dashboard')}
+          configure={can(profile, 'configure')}
+        />
         <div className="sidebar-bottom">
           <div className="avatar">
             {profile.first_name[0]}

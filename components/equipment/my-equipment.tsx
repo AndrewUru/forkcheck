@@ -44,14 +44,22 @@ export async function MyEquipment({ quickStart = false }: { quickStart?: boolean
     );
   const [schedules, organization] = quickStart
     ? await Promise.all([
-        db.from('equipment_schedules').select('id,next_due').eq('equipment_id', e.id)
-          .eq('active', true).order('next_due').order('id').limit(1),
+        db
+          .from('equipment_schedules')
+          .select('id,next_due')
+          .eq('equipment_id', e.id)
+          .eq('active', true)
+          .order('next_due')
+          .order('id')
+          .limit(1),
         db.from('organizations').select('timezone').single(),
       ])
     : [null, null];
-  if (schedules?.error || organization?.error) throw new Error('No se pudo cargar la revisión del equipo');
+  if (schedules?.error || organization?.error)
+    throw new Error('No se pudo cargar la revisión del equipo');
   const schedule = schedules?.data?.[0];
-  const due = schedule && organization?.data && schedule.next_due <= todayIn(organization.data.timezone);
+  const due =
+    schedule && organization?.data && schedule.next_due <= todayIn(organization.data.timezone);
   return (
     <section className="panel detail-panel my-equipment">
       <div>
@@ -63,17 +71,31 @@ export async function MyEquipment({ quickStart = false }: { quickStart?: boolean
           {e.branch_name} · {e.zone_name ?? 'Sin zona'}
         </p>
         <Status status={e.status} />
-        {quickStart && <p className="shift-due">{schedule ? `${due ? 'Revisión pendiente' : 'Próxima revisión'} · ${schedule.next_due}` : 'Sin revisión programada'}</p>}
-        {e.status === 'BLOCKED' && <p className="text-red">Equipo bloqueado. No utilizar. Una revisión no lo desbloquea.</p>}
+        {quickStart && (
+          <p className="shift-due">
+            {schedule
+              ? `${due ? 'Revisión pendiente' : 'Próxima revisión'} · ${schedule.next_due}`
+              : 'Sin revisión programada'}
+          </p>
+        )}
+        {e.status === 'BLOCKED' && (
+          <p className="text-red">Equipo bloqueado. No utilizar. Una revisión no lo desbloquea.</p>
+        )}
       </div>
       <div className="heading-actions">
-        {quickStart && due && can(profile, 'inspect') && !['INACTIVE', 'MAINTENANCE'].includes(e.status) && (
-          <form action={startInspection}>
-            <input type="hidden" name="schedule" value={schedule.id} />
-            <button className="button primary">Iniciar revisión</button>
-          </form>
-        )}
-        <Link className={`button ${quickStart ? '' : 'primary'}`} href={`/equipment/${e.public_code}`}>
+        {quickStart &&
+          due &&
+          can(profile, 'inspect') &&
+          !['INACTIVE', 'MAINTENANCE'].includes(e.status) && (
+            <form action={startInspection}>
+              <input type="hidden" name="schedule" value={schedule.id} />
+              <button className="button primary">Iniciar revisión</button>
+            </form>
+          )}
+        <Link
+          className={`button ${quickStart ? '' : 'primary'}`}
+          href={`/equipment/${e.public_code}`}
+        >
           Ver mi equipo →
         </Link>
       </div>

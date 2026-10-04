@@ -1566,3 +1566,143 @@ code {
   align-items: center;
   min-height: 44px;
 }
+
+/* Turn entry, review summary and mobile navigation. */
+.shift-heading {
+  margin-bottom: 24px;
+}
+.shift-section-heading {
+  margin-top: 32px;
+  align-items: center;
+}
+.shift-resume .button {
+  margin: 6px 8px 0 0;
+}
+.shift-due {
+  margin-top: 12px;
+  font-weight: 600;
+}
+.shift-all {
+  margin-top: 24px;
+}
+.inspection-review {
+  margin-top: 28px;
+  padding: 22px;
+}
+.inspection-review ul {
+  padding-left: 20px;
+}
+.inspection-review .text-link {
+  white-space: normal;
+}
+.inspection-result-state {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin: 18px 0;
+}
+.success-banner .heading-actions {
+  margin-top: 20px;
+}
+.success-banner p + p {
+  margin-top: 10px;
+}
+.sidebar nav a[aria-current='page'] {
+  background: var(--navy);
+  color: #ffd15c;
+  box-shadow: inset 3px 0 var(--accent);
+}
+.mobile-options,
+.sidebar .mobile-navigation {
+  display: none;
+}
+@media (max-width: 1023px) {
+  .sidebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 12px;
+  }
+  .sidebar .brand {
+    font-size: 24px;
+    padding: 0;
+  }
+  .sidebar .desktop-navigation {
+    display: none;
+  }
+  .mobile-options {
+    display: block;
+  }
+  .mobile-options summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 48px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .mobile-options nav {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    top: 76px;
+    margin: 0;
+    padding: 12px;
+    background: var(--blue);
+    border-radius: 8px;
+    flex-direction: column;
+    box-shadow: 0 12px 30px #172b4d33;
+    z-index: 30;
+    max-height: 65vh;
+    overflow: auto;
+  }
+  .sidebar .mobile-navigation {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    background: white;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    z-index: 20;
+    gap: 4px;
+  }
+  .sidebar .mobile-navigation a {
+    flex-direction: column;
+    gap: 3px;
+    padding: 7px 2px;
+    font-size: 11px;
+    min-height: 56px;
+  }
+  .sidebar .mobile-navigation a[aria-current='page'] {
+    color: var(--blue);
+    background: var(--blue-soft);
+    box-shadow: none;
+  }
+  .main-wrap {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+  .inspection-submit {
+    bottom: calc(74px + env(safe-area-inset-bottom));
+  }
+  .inspection-submit .button,
+  .my-equipment .button {
+    white-space: normal;
+  }
+  .my-equipment .heading-actions {
+    width: 100%;
+  }
+  .my-equipment .heading-actions > form,
+  .my-equipment .heading-actions > a {
+    flex: 1;
+  }
+  .my-equipment form .button {
+    width: 100%;
+  }
+}

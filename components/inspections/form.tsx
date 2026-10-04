@@ -38,6 +38,20 @@ export function InspectionForm({
   const unanswered = items.filter((i) => !answers[i.id] && i.allowed_answers.includes('OK'));
   const required = items.filter((i) => i.required);
   const done = required.filter((i) => answers[i.id]).length;
+  const failures = items.filter((item) =>
+    ['WARNING', 'CRITICAL'].includes(answers[item.id]?.answer),
+  );
+  const willBlock = failures.some(
+    (item) =>
+      item.blocks_equipment_on_failure ||
+      item.severity_when_failed === 'CRITICAL' ||
+      answers[item.id]?.answer === 'CRITICAL',
+  );
+  function showError(message: string, target: string) {
+    setError(message);
+    document.getElementById(target)?.focus();
+    document.getElementById(target)?.scrollIntoView({ behavior: 'auto', block: 'center' });
+  }
   function answer(item: ChecklistItem, kind: AnswerKind) {
     setAnswers((previous) => ({
       ...previous,
@@ -52,14 +66,22 @@ export function InspectionForm({
   async function submit() {
     setError('');
     if (done < required.length || (!signature && !existingSignature) || !confirmed) {
-      setError('Responde los puntos obligatorios, firma y confirma la revisión.');
+      const missing = required.find((item) => !answers[item.id]);
+      showError(
+        missing
+          ? `Responde este punto: ${missing.label}`
+          : !signature && !existingSignature
+            ? 'Añade tu firma antes de finalizar.'
+            : 'Confirma que has comprobado los puntos antes de finalizar.',
+        missing ? `item-${missing.id}` : 'inspection-confirmation',
+      );
       return;
     }
     for (const item of items) {
       const a = answers[item.id];
       if (a && ['WARNING', 'CRITICAL'].includes(a.answer)) {
         if (!a.notes.trim()) {
-          setError(`Describe la incidencia: ${item.label}`);
+          showError(`Describe la incidencia: ${item.label}`, `notes-${item.id}`);
           return;
         }
         if (
@@ -67,7 +89,7 @@ export function InspectionForm({
           !photos[item.id]?.length &&
           !uploadedPhotos[item.id]?.length
         ) {
-          setError(`Añade una fotografía: ${item.label}`);
+          showError(`Añade una fotografía: ${item.label}`, `photos-${item.id}`);
           return;
         }
       }
@@ -170,7 +192,12 @@ export function InspectionForm({
                 const a = answers[item.id];
                 const failed = a && ['WARNING', 'CRITICAL'].includes(a.answer);
                 return (
-                  <article className={`checklist-card ${a ? 'answered' : ''}`} key={item.id}>
+                  <article
+                    id={`item-${item.id}`}
+                    tabIndex={-1}
+                    className={`checklist-card ${a ? 'answered' : ''}`}
+                    key={item.id}
+                  >
                     <div className="checklist-card-heading">
                       <span className="item-number">{String(index + 1).padStart(2, '0')}</span>
                       <div>
@@ -212,6 +239,7 @@ export function InspectionForm({
                         <label>
                           Descripción de la incidencia y notas
                           <textarea
+                            id={`notes-${item.id}`}
                             rows={3}
                             maxLength={4000}
                             value={a.notes}
@@ -229,6 +257,7 @@ export function InspectionForm({
                           <Camera size={18} /> Fotografía{' '}
                           {item.requires_photo_on_failure ? 'obligatoria' : 'opcional'}
                           <input
+                            id={`photos-${item.id}`}
                             type="file"
                             accept="image/png,image/jpeg,image/webp"
                             capture="environment"
@@ -256,7 +285,39 @@ export function InspectionForm({
               })}
           </section>
         ))}
-        <section className="panel signature-panel">
+        <section className="panel inspection-review" aria-labelledby="review-title">
+          <p className="eyebrow">ANTES DE FIRMAR</p>
+          <h2 id="review-title">Resumen de tu revisión</h2>
+          <p>
+            {done} de {required.length} puntos obligatorios respondidos · {failures.length} puntos
+            con incidencia.
+          </p>
+          {done < required.length && (
+            <p>Quedan {required.length - done} puntos obligatorios por revisar.</p>
+          )}
+          {failures.length > 0 && (
+            <ul>
+              {failures.map((item) => (
+                <li key={item.id}>
+                  <a className="text-link" href={`#item-${item.id}`}>
+                    {item.label} · {labels[answers[item.id].answer]}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+          {willBlock ? (
+            <p className="alert">
+              Al finalizar, estos fallos bloquearán el equipo. No lo utilices.
+            </p>
+          ) : (
+            <p>
+              Finalizar registra la revisión y las incidencias detectadas. Un bloqueo previo se
+              mantiene.
+            </p>
+          )}
+        </section>
+        <section id="inspection-confirmation" tabIndex={-1} className="panel signature-panel">
           {existingSignature ? (
             <div className="signature">
               <h2>Firma ya guardada</h2>
@@ -293,7 +354,7 @@ export function InspectionForm({
           </p>
         )}
         <button type="button" className="button primary full" disabled={busy} onClick={submit}>
-          {busy ? 'Guardando evidencias e inspección…' : 'Firmar y finalizar inspección'}
+          {busy ? 'Guardando evidencias e inspección…' : 'Guardar revisión firmada'}
         </button>
         <small>El bloqueo y las incidencias se procesan al confirmar el guardado.</small>
       </div>

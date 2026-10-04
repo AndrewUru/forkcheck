@@ -4,6 +4,25 @@ import Image from 'next/image';
 import { session } from '@/lib/auth/session';
 import { can } from '@/lib/permissions';
 import { InspectionForm } from '@/components/inspections/form';
+import { Status } from '@/components/ui/status';
+import type { AnswerKind } from '@/types/domain';
+const answerLabels: Record<AnswerKind, string> = {
+  OK: 'Correcto',
+  WARNING: 'Con incidencias',
+  CRITICAL: 'Crítico',
+  NOT_APPLICABLE: 'No aplica',
+};
+function answerLabel(value: string) {
+  switch (value) {
+    case 'OK':
+    case 'WARNING':
+    case 'CRITICAL':
+    case 'NOT_APPLICABLE':
+      return answerLabels[value];
+    default:
+      return 'Respuesta no reconocida';
+  }
+}
 export default async function InspectionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
@@ -29,12 +48,13 @@ export default async function InspectionPage({ params }: { params: Promise<{ id:
     throw new Error('No se puede cargar la inspección');
   let content;
   if (i.completed_at) {
-    const [answers, signature, incidents] = await Promise.all([
+    const [answers, signature, incidents, organization] = await Promise.all([
       db.from('inspection_answers').select('*').eq('inspection_id', i.id),
       db.from('signatures').select('*').eq('inspection_id', i.id).single(),
       db.from('incidents').select('id').eq('inspection_id', i.id),
+      db.from('organizations').select('timezone').single(),
     ]);
-    if (answers.error || signature.error || incidents.error)
+    if (answers.error || signature.error || incidents.error || organization.error)
       throw new Error('No se puede cargar el resultado');
     const evidence: { id: string; url: string }[] = [];
     if (incidents.data.length) {
@@ -63,11 +83,42 @@ export default async function InspectionPage({ params }: { params: Promise<{ id:
     if (signatureError) throw signatureError;
     content = (
       <>
-        <div className="success-banner">
+        <div className="success-banner" role="status">
           <h2>Inspección registrada</h2>
           <p>
-            Resultado: {i.overall_status} · {new Date(i.completed_at).toLocaleString('es-ES')}
+            Resultado: {i.overall_status ? answerLabels[i.overall_status] : 'Registrado'} ·{' '}
+            {new Date(i.completed_at).toLocaleString('es-ES', {
+              timeZone: organization.data.timezone,
+            })}
           </p>
+          <p>{incidents.data.length} incidencias registradas en esta revisión.</p>
+          {equipment.data && (
+            <div className="inspection-result-state">
+              <span>Estado actual del equipo</span>
+              <Status status={equipment.data.status} />
+            </div>
+          )}
+          {equipment.data?.status === 'BLOCKED' && (
+            <p className="text-red">
+              <strong>No utilices este equipo.</strong> El bloqueo sigue activo hasta su resolución
+              autorizada.
+            </p>
+          )}
+          <div className="heading-actions">
+            <Link className="button dark" href="/shift">
+              Volver a mi turno
+            </Link>
+            {equipment.data && (
+              <Link className="button" href={`/equipment/${equipment.data.public_code}`}>
+                Ver equipo
+              </Link>
+            )}
+            {incidents.data.length > 0 && (
+              <Link className="button" href="/incidents">
+                Consultar incidencias
+              </Link>
+            )}
+          </div>
         </div>
         <section className="panel detail-panel">
           {items.data.map((item) => {
@@ -78,7 +129,7 @@ export default async function InspectionPage({ params }: { params: Promise<{ id:
                   <strong>{item.label}</strong>
                   {a?.notes && <p>{a.notes}</p>}
                 </div>
-                <span>{a?.answer ?? 'Opcional sin respuesta'}</span>
+                <span>{a ? answerLabel(a.answer) : 'Opcional sin respuesta'}</span>
               </div>
             );
           })}
