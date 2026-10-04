@@ -1,5 +1,11 @@
 # Decisiones de arquitectura — primera entrega
 
+## Experiencia del turno
+
+- El inicio del operario dirige a `/shift`: equipo personal, revisiones en curso propias y una lista limitada de equipos pendientes dentro de RLS. Las fechas usan la zona horaria de la organización; no se calculan métricas desde esa lista.
+- La navegación móvil prioriza Inicio, Equipos, Incidencias y Perfil; el resto sigue accesible en un menú secundario. Los administradores mantienen su centro de control como inicio.
+- Antes de firmar se muestra un resumen derivado de las respuestas locales y de las mismas reglas de bloqueo del dominio. El resultado definitivo y el estado actual del equipo se consultan después de la transacción de finalización. No se modifican permisos, persistencia ni bloqueo automático.
+
 ## Demostración con varios participantes
 
 - La preparación administrativa crea `demo-testers`, una organización exclusiva, cinco sucursales y dos equipos por sucursal, con checklist publicado y planes diarios. No copia datos reales ni modifica organizaciones existentes; si el slug ya existe, aborta toda la transacción.

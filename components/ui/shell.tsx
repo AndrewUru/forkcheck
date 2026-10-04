@@ -1,18 +1,7 @@
 import Link from 'next/link';
-import {
-  ClipboardCheck,
-  LayoutDashboard,
-  Truck,
-  AlertTriangle,
-  LogOut,
-  Building2,
-  ScanLine,
-  Users,
-  UserRound,
-  Sparkles,
-  CalendarDays,
-} from 'lucide-react';
+import { ClipboardCheck, LogOut } from 'lucide-react';
 import { logout } from '@/app/actions';
+import { WorkspaceNavigation, WorkspaceLocation } from './navigation';
 import { can } from '@/lib/permissions';
 import type { Profile } from '@/types/domain';
 export function Shell({ profile, children }: { profile: Profile; children: React.ReactNode }) {
@@ -26,49 +15,7 @@ export function Shell({ profile, children }: { profile: Profile; children: React
           forkcheck<span className="brand-dot">.</span>
         </Link>
         <div className="workspace-label">CONTROL DE OPERACIONES</div>
-        <nav aria-label="Navegación principal">
-          {can(profile, 'dashboard') && (
-            <Link href="/admin">
-              <LayoutDashboard size={19} /> Centro de control
-            </Link>
-          )}
-          <Link href="/equipment">
-            <Truck size={19} /> Equipos
-          </Link>
-          <Link href="/calendar">
-            <CalendarDays size={19} /> Calendario diario
-          </Link>
-          {can(profile, 'configure') && (
-            <Link href="/admin/users">
-              <Users size={19} /> Usuarios
-            </Link>
-          )}
-          {can(profile, 'configure') && (
-            <Link href="/admin/assignments">
-              <Users size={19} /> Asignaciones
-            </Link>
-          )}
-          <Link href="/incidents">
-            <AlertTriangle size={19} /> Incidencias
-          </Link>
-          <Link href="/providers">
-            <Building2 size={19} /> Proveedores de renting
-          </Link>
-          <Link href="/assistant">
-            <Sparkles size={19} /> Asistente IA
-          </Link>
-          {can(profile, 'dashboard') && (
-            <Link href="/admin/branches">
-              <Building2 size={19} /> Sucursales
-            </Link>
-          )}
-          <Link href="/scan">
-            <ScanLine size={19} /> Acceso por QR
-          </Link>
-          <Link href="/profile">
-            <UserRound size={19} /> Mi perfil
-          </Link>
-        </nav>
+        <WorkspaceNavigation dashboard={can(profile, 'dashboard')} configure={can(profile, 'configure')} />
         <div className="sidebar-bottom">
           <div className="avatar">
             {profile.first_name[0]}
@@ -87,9 +34,7 @@ export function Shell({ profile, children }: { profile: Profile; children: React
       </aside>
       <div className="main-wrap">
         <header className="topbar">
-          <span>
-            <span className="live-dot" /> Operaciones / <strong>Control diario</strong>
-          </span>
+          <WorkspaceLocation />
           <span className="topbar-note">SEGURIDAD EN CADA TURNO</span>
         </header>
         <main id="main-content">{children}</main>
