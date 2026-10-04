@@ -32,6 +32,7 @@ export function InspectionForm({
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [errorTarget, setErrorTarget] = useState<string | null>(null);
   const [bulk, setBulk] = useState(false);
   const [signatureUploaded, setSignatureUploaded] = useState(Boolean(existingSignature));
   const [uploadedPhotos, setUploadedPhotos] = useState<Record<string, string[]>>({});
@@ -49,6 +50,7 @@ export function InspectionForm({
   );
   function showError(message: string, target: string) {
     setError(message);
+    setErrorTarget(target);
     document.getElementById(target)?.focus();
     document.getElementById(target)?.scrollIntoView({ behavior: 'auto', block: 'center' });
   }
@@ -65,6 +67,7 @@ export function InspectionForm({
   }
   async function submit() {
     setError('');
+    setErrorTarget(null);
     if (done < required.length || (!signature && !existingSignature) || !confirmed) {
       const missing = required.find((item) => !answers[item.id]);
       showError(
@@ -150,38 +153,41 @@ export function InspectionForm({
         Comprueba físicamente cada punto. Las respuestas se envían juntas al finalizar; no cierres
         esta página antes de guardar.
       </p>
-      <button
-        type="button"
-        className="button bulk-button"
-        onClick={() => setBulk(!bulk)}
-        disabled={busy || !unanswered.length}
-      >
-        <CheckCheck size={19} /> Marcar resto como correcto ({unanswered.length})
-      </button>
-      {bulk && (
-        <div className="bulk-confirm">
-          <h2>Confirma los puntos que has revisado</h2>
-          <ul>
-            {unanswered.map((i) => (
-              <li key={i.id}>{i.label}</li>
-            ))}
-          </ul>
-          <button
-            type="button"
-            className="button dark"
-            disabled={busy}
-            onClick={() => {
-              const next = { ...answers };
-              for (const i of unanswered)
-                next[i.id] = { item_id: i.id, answer: 'OK', notes: '', photos: [] };
-              setAnswers(next);
-              setBulk(false);
-            }}
-          >
-            He comprobado estos {unanswered.length} puntos
-          </button>
-        </div>
-      )}
+      <details className="inspection-shortcuts">
+        <summary>Opciones de revisión</summary>
+        <button
+          type="button"
+          className="button bulk-button"
+          onClick={() => setBulk(!bulk)}
+          disabled={busy || !unanswered.length}
+        >
+          <CheckCheck size={19} /> Marcar resto como correcto ({unanswered.length})
+        </button>
+        {bulk && (
+          <div className="bulk-confirm">
+            <h2>Confirma los puntos que has revisado</h2>
+            <ul>
+              {unanswered.map((i) => (
+                <li key={i.id}>{i.label}</li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              className="button dark"
+              disabled={busy}
+              onClick={() => {
+                const next = { ...answers };
+                for (const i of unanswered)
+                  next[i.id] = { item_id: i.id, answer: 'OK', notes: '', photos: [] };
+                setAnswers(next);
+                setBulk(false);
+              }}
+            >
+              He comprobado estos {unanswered.length} puntos
+            </button>
+          </div>
+        )}
+      </details>
       <fieldset disabled={busy} className="inspection-fieldset">
         {sections.map((section) => (
           <section key={section.id}>
@@ -229,6 +235,11 @@ export function InspectionForm({
                         );
                       })}
                     </div>
+                    {error && errorTarget?.endsWith(item.id) && (
+                      <p role="alert" className="alert field-error">
+                        {error}
+                      </p>
+                    )}
                     {failed && (
                       <div className="failure-fields">
                         {item.blocks_equipment_on_failure && (
@@ -266,7 +277,10 @@ export function InspectionForm({
                             onChange={(event) => {
                               const files = Array.from(event.target.files ?? []);
                               if (files.length > 5 || files.some((f) => f.size > 5 * 1024 * 1024)) {
-                                setError('Máximo 5 fotos de hasta 5 MB por punto.');
+                                showError(
+                                  'Máximo 5 fotos de hasta 5 MB por punto.',
+                                  `photos-${item.id}`,
+                                );
                                 event.target.value = '';
                                 return;
                               }
@@ -289,8 +303,8 @@ export function InspectionForm({
           <p className="eyebrow">ANTES DE FIRMAR</p>
           <h2 id="review-title">Resumen de tu revisión</h2>
           <p>
-            {done} de {required.length} puntos obligatorios respondidos · {failures.length} puntos
-            con incidencia.
+            {done} de {required.length} puntos obligatorios respondidos · {failures.length}{' '}
+            {failures.length === 1 ? 'punto con incidencia' : 'puntos con incidencia'}.
           </p>
           {done < required.length && (
             <p>Quedan {required.length - done} puntos obligatorios por revisar.</p>
@@ -318,6 +332,11 @@ export function InspectionForm({
           )}
         </section>
         <section id="inspection-confirmation" tabIndex={-1} className="panel signature-panel">
+          {error && errorTarget === 'inspection-confirmation' && (
+            <p role="alert" className="alert">
+              {error}
+            </p>
+          )}
           {existingSignature ? (
             <div className="signature">
               <h2>Firma ya guardada</h2>
@@ -348,7 +367,7 @@ export function InspectionForm({
         </section>
       </fieldset>
       <div className="inspection-submit">
-        {error && (
+        {error && !errorTarget && (
           <p role="alert" className="alert">
             {error}
           </p>

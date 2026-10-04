@@ -19,9 +19,11 @@ import {
 export function WorkspaceNavigation({
   dashboard,
   configure,
+  mobileLogout,
 }: {
   dashboard: boolean;
   configure: boolean;
+  mobileLogout: React.ReactNode;
 }) {
   const pathname = usePathname();
   const home = dashboard ? '/admin' : '/shift';
@@ -48,7 +50,12 @@ export function WorkspaceNavigation({
     pathname === href || (href !== home && pathname.startsWith(`${href}/`));
   const links = (items: typeof primary) =>
     items.map(({ href, label, icon: Icon }) => (
-      <Link key={href} href={href} aria-current={active(href) ? 'page' : undefined}>
+      <Link
+        key={href}
+        href={href}
+        aria-current={active(href) ? 'page' : undefined}
+        onClick={(event) => event.currentTarget.closest('details')?.removeAttribute('open')}
+      >
         <Icon size={20} aria-hidden />
         <span>{label}</span>
       </Link>
@@ -70,7 +77,10 @@ export function WorkspaceNavigation({
         <summary>
           <Menu size={20} aria-hidden /> Más opciones
         </summary>
-        <nav aria-label="Más opciones">{links(secondary)}</nav>
+        <nav aria-label="Más opciones">
+          {links(secondary)}
+          {mobileLogout}
+        </nav>
       </details>
       <nav className="mobile-navigation" aria-label="Navegación móvil">
         {links(primary)}

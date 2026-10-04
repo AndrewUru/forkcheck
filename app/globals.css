@@ -1121,8 +1121,7 @@ input[type='checkbox'] {
   gap: 12px;
 }
 .inspection-submit {
-  position: sticky;
-  bottom: 0;
+  position: static;
   background: #f5f7fbf5;
   backdrop-filter: blur(8px);
   padding: 16px 0 12px;
@@ -1688,9 +1687,6 @@ code {
   .main-wrap {
     padding-bottom: calc(80px + env(safe-area-inset-bottom));
   }
-  .inspection-submit {
-    bottom: calc(74px + env(safe-area-inset-bottom));
-  }
   .inspection-submit .button,
   .my-equipment .button {
     white-space: normal;
@@ -1705,4 +1701,26 @@ code {
   .my-equipment form .button {
     width: 100%;
   }
+}
+
+.inspection-shortcuts summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 12px;
+}
+.inspection-shortcuts summary::before {
+  content: '+';
+  margin-right: 8px;
+}
+.inspection-shortcuts[open] summary::before {
+  content: '-';
+}
+.field-error {
+  margin: 16px 0 0;
+}
+.shift-section-heading .text-link {
+  gap: 8px;
 }

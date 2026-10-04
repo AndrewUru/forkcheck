@@ -18,6 +18,13 @@ export function Shell({ profile, children }: { profile: Profile; children: React
         <WorkspaceNavigation
           dashboard={can(profile, 'dashboard')}
           configure={can(profile, 'configure')}
+          mobileLogout={
+            <form action={logout}>
+              <button className="button full">
+                <LogOut size={18} aria-hidden /> Cerrar sesión
+              </button>
+            </form>
+          }
         />
         <div className="sidebar-bottom">
           <div className="avatar">
