@@ -65,8 +65,6 @@ Se mantiene Supabase real. La instalación manual en SQL Editor se genera desde 
 - Eliminar significa dar de baja: desactivar el perfil y cerrar asignaciones personales en una transacción auditada. Se conserva Auth y el histórico; no se permite la baja propia. No se ofrece reactivación ni borrado irreversible.
 - La migración y la función requieren instalación explícita; no se despliegan automáticamente.
 
-## Paleta visual
-
 ## Cambio y recuperación de contraseñas
 
 - Perfil permite cambiar la contraseña tras verificar la actual con Supabase Auth. Los alias internos no reciben correo. CORPORATE_ADMIN restablece únicamente cuentas activas de su organización, excepto la propia y SUPERADMIN, desde la Edge Function `manage-users`.

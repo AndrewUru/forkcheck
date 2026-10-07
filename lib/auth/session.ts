@@ -3,7 +3,7 @@ import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { createClient, isConfigured } from '@/lib/supabase/server';
 import { can, type Permission } from '@/lib/permissions';
-export const session = cache(async () => {
+export const passwordSession = cache(async () => {
   if (!isConfigured()) redirect('/setup');
   const db = await createClient();
   const {
@@ -18,7 +18,12 @@ export const session = cache(async () => {
     .eq('active', true)
     .single();
   if (!profile) redirect('/login?error=inactive');
-  return { db, profile };
+  return { db, profile, user };
+});
+export const session = cache(async () => {
+  const context = await passwordSession();
+  if (context.profile.must_change_password) redirect('/change-password');
+  return context;
 });
 export async function requirePermission(permission: Permission) {
   const context = await session();

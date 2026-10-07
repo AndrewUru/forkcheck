@@ -5,7 +5,7 @@ export async function createFleetTestDatabase() {
   const db = new PGlite({ extensions: { pgcrypto } });
   await db.exec(`create schema auth; create schema storage; create schema extensions;
  create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
- create table auth.users(id uuid primary key,aud text,role text,email text,created_at timestamptz,updated_at timestamptz);
+ create table auth.users(id uuid primary key,aud text,role text,email text,encrypted_password text,raw_app_meta_data jsonb default '{}'::jsonb,created_at timestamptz,updated_at timestamptz);
  create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
  grant usage on schema auth,storage,extensions to authenticated; grant execute on function auth.uid() to authenticated;
  create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
