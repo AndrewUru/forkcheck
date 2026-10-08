@@ -145,7 +145,19 @@ tests/
 docs/architecture.md
 ```
 
-## Verificación
+## Plantillas de inspección
+
+El administrador de la organización dispone de **Plantillas** en la navegación. Puede crear una plantilla con tipo de equipo y periodicidad, añadir secciones/preguntas, configurar respuestas, gravedad, fotografía y bloqueo, guardar el borrador y publicar una versión. El editor mantiene los cambios localmente hasta pulsar **Guardar borrador**. Hay vista previa, reordenación y confirmación de publicación; un guardado de otro administrador obliga a recargar para evitar sobrescribirlo.
+
+Las versiones publicadas son inmutables. **Editar nueva versión / abrir borrador** crea una copia de la última publicada o abre el borrador existente. Las inspecciones abiertas mantienen su versión original; las nuevas usan la última publicada. **Duplicar esta versión** crea una plantilla independiente y permite cambiar el tipo y la periodicidad, que quedan fijados al crearla. Límites: 30 secciones y 200 preguntas por versión.
+
+**Retirar del catálogo** impide nuevas altas y edición/publicación de esa plantilla; mantiene el histórico y los planes de revisión ya asignados. No suspende las inspecciones de seguridad existentes. No hay borrado de plantillas ni reasignación de planes en este editor.
+
+Para activar esta funcionalidad en un entorno existente, aplicar `supabase/migrations/202610080001_checklist_management.sql` después de las migraciones previas mediante el procedimiento habitual, revisando el proyecto de destino. No requiere una Edge Function ni claves administrativas en Next.js. La migración añade un borrador máximo por plantilla, revisión de edición, retirada, RPC y una vista `security_invoker` para las plantillas publicadas disponibles. No modifica migraciones aplicadas ni ejecuta el seed. Si el entorno contiene varios borradores para una misma plantilla, hay que revisar esa situación antes de aplicar el índice único; no se eliminan automáticamente.
+
+Las pruebas PGlite verifican permisos, aislamiento, validación/rollback, guardados obsoletos, duplicado, inmutabilidad, inspecciones fijadas a su versión y retirada. Antes de uso operativo, validar también el recorrido con sesiones reales de administrador y operario en Supabase; los tests locales no prueban PostgREST alojado.
+
+## Comandos de verificación
 
 ```powershell
 npm run lint

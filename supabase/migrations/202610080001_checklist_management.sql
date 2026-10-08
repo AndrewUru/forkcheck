@@ -12,7 +12,7 @@ grant select on public.available_checklist_templates to authenticated;
 -- Only authorized RPCs below can invoke this helper; IDs are never accepted without scope checks.
 create function private.copy_checklist(p_source uuid,p_target uuid) returns void
 language plpgsql security definer set search_path='' as $$
-declare s public.checklist_sections; section_id uuid; org uuid;
+declare s public.checklist_sections; copied_section_id uuid; org uuid;
 begin
  select organization_id into org from public.checklist_versions where id=p_target and published_at is null;
  if org is null or org is distinct from private.org_id() or private.role() is distinct from 'CORPORATE_ADMIN'
@@ -20,9 +20,9 @@ begin
  if (select count(*) from public.checklist_sections where version_id=p_source)>30 or (select count(*) from public.checklist_items where version_id=p_source)>200 then raise exception 'Checklist exceeds editor limits'; end if;
  for s in select * from public.checklist_sections where version_id=p_source order by sort_order loop
    insert into public.checklist_sections(organization_id,version_id,title,sort_order)
-   values(org,p_target,s.title,s.sort_order) returning id into section_id;
+   values(org,p_target,s.title,s.sort_order) returning id into copied_section_id;
    insert into public.checklist_items(organization_id,version_id,section_id,label,description,sort_order,required,severity_when_failed,requires_photo_on_failure,blocks_equipment_on_failure,allowed_answers)
-   select org,p_target,section_id,label,description,sort_order,required,severity_when_failed,requires_photo_on_failure,blocks_equipment_on_failure,allowed_answers
+   select org,p_target,copied_section_id,label,description,sort_order,required,severity_when_failed,requires_photo_on_failure,blocks_equipment_on_failure,allowed_answers
    from public.checklist_items where version_id=p_source and checklist_items.section_id=s.id;
  end loop;
 end $$;

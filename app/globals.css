@@ -139,7 +139,7 @@
   overflow-wrap: anywhere;
 }
 .management-form .checklist-question {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--line);
   padding: 24px 0;
   margin-top: 24px;
 }
