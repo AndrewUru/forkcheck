@@ -126,11 +126,29 @@
 .management-form label {
   margin-bottom: 18px;
 }
-.checklist-toolbar { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0; }
-.checklist-editor .panel, .checklist-preview { margin-bottom: 24px; min-width: 0; overflow-wrap: anywhere; }
-.management-form .checklist-question { border-top: 1px solid var(--border); padding: 24px 0; margin-top: 24px; }
-.checklist-question legend { font-weight: 700; }
-.checklist-preview li { margin-bottom: 20px; }
+.checklist-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 18px 0;
+}
+.checklist-editor .panel,
+.checklist-preview {
+  margin-bottom: 24px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.management-form .checklist-question {
+  border-top: 1px solid var(--border);
+  padding: 24px 0;
+  margin-top: 24px;
+}
+.checklist-question legend {
+  font-weight: 700;
+}
+.checklist-preview li {
+  margin-bottom: 20px;
+}
 .password-page {
   min-height: 100dvh;
   display: grid;
