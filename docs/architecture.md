@@ -74,7 +74,15 @@ Se mantiene Supabase real. La instalación manual en SQL Editor se genera desde 
 - La contraseña temporal se devuelve únicamente en la respuesta del restablecimiento, no se persiste ni se recupera después. Ante una respuesta perdida, el administrador puede generar otra. Se limita cada cuenta a un restablecimiento por minuto. Las URLs de evidencia ya firmadas conservan su breve caducidad.
 - La migración nueva y la actualización de la Edge Function se instalan explícitamente, en ese orden. Los tests PGlite verifican trigger, rollback, RLS y RPC con un esquema Auth mínimo; no sustituyen la validación real de GoTrue, su política de contraseñas y sesiones.
 
-## Paleta visual
+## Administración de plantillas
+
+- CORPORATE_ADMIN dispone de catálogo paginado, creación, duplicado, borradores, publicación y retirada del catálogo mediante RPC autorizadas y auditadas. La organización se deriva de la sesión; no hay escrituras directas desde el navegador.
+- Cada plantilla fija su tipo de equipo y periodicidad al crearla. Para cambiar esos atributos se duplica como una plantilla nueva. Las nuevas versiones cambian secciones, preguntas y reglas; las inspecciones abiertas y terminadas conservan su checklist_version_id. Una nueva inspección adopta la última versión publicada.
+- Solo hay un borrador por plantilla. Guardar reemplaza su contenido en una transacción y exige la revisión esperada para evitar sobrescribir otro editor. El formulario es local y envía el contenido completo, con límites de 30 secciones y 200 preguntas. Publicar exige un borrador completo guardado; el contenido publicado continúa inmutable.
+- Retirar significa ocultar del catálogo para nuevas altas y bloquear su edición/publicación. Los planes existentes siguen usando la última versión publicada, para no suspender revisiones de seguridad; el histórico y los borradores se conservan. Esta entrega no administra la reasignación de planes ni borra plantillas.
+- Se instala una migración incremental antes de usar el editor. Los tipos, permisos, pruebas de aislamiento, validación, revisión concurrente y versionado acompañan la funcionalidad; no se despliega automáticamente.
+
+## Paleta visual de la aplicación
 
 - Se aplica la referencia visual facilitada: azul principal #0047AB, azul oscuro #083D82, blanco y amarillo #E9AB19. Cian #008EC4, verde #00AC83, rojo #E40036 y violeta #6B56A2 quedan como acentos secundarios.
 - Los colores de estado conservan su significado; los textos usan variantes oscuras para mantener contraste. La paleta se comparte entre navegación, formularios, login e iconos de la PWA mediante variables CSS.

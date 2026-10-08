@@ -69,12 +69,13 @@ export interface Database {
         Tenant & { equipment_id: string; template_id: string; next_due: string; active: boolean }
       >;
       checklist_templates: Table<
-        Named & { equipment_type_id: string; frequency: string; custom_days: number | null }
+        Named & { equipment_type_id: string; frequency: string; custom_days: number | null; archived_at: string | null }
       >;
       checklist_versions: Table<
         Tenant & {
           template_id: string;
           version: number;
+          edit_revision: number;
           published_at: string | null;
           created_at: string;
         }
@@ -138,8 +139,16 @@ export interface Database {
         }
       >;
     };
-    Views: { equipment_overview: { Row: Row<EquipmentOverview>; Relationships: [] } };
+    Views: {
+      equipment_overview: { Row: Row<EquipmentOverview>; Relationships: [] };
+      available_checklist_templates: { Row: Row<Named & { equipment_type_id: string; frequency: string; custom_days: number | null; archived_at: string | null }>; Relationships: [] };
+    };
     Functions: {
+      create_checklist_template: { Args: { p_input: Json; p_source?: string | null }; Returns: string };
+      create_checklist_draft: { Args: { p_template: string }; Returns: string };
+      save_checklist_draft: { Args: { p_version: string; p_revision: number; p_sections: Json }; Returns: number };
+      publish_checklist_version: { Args: { p_version: string; p_revision: number }; Returns: string };
+      retire_checklist_template: { Args: { p_template: string }; Returns: string };
       register_employee: { Args: { p_auth_id: string; p_input: Json }; Returns: string };
       deactivate_employee: { Args: { p_user_id: string }; Returns: string };
       save_provider: { Args: { p_input: Json; p_id: string | null }; Returns: string };

@@ -14,6 +14,7 @@ import {
   Sparkles,
   LayoutDashboard,
   Menu,
+  ClipboardCheck,
 } from 'lucide-react';
 
 export function WorkspaceNavigation({
@@ -38,6 +39,7 @@ export function WorkspaceNavigation({
     ...(configure
       ? [
           { href: '/admin/users', label: 'Usuarios', icon: Users },
+          { href: '/admin/templates', label: 'Plantillas', icon: ClipboardCheck },
           { href: '/admin/assignments', label: 'Asignaciones', icon: Users },
         ]
       : []),
