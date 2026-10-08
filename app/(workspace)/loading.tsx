@@ -1,13 +1,11 @@
-export default function Loading() {
+export default function LoadingWorkspace() {
   return (
-    <div aria-label="Cargando datos" aria-busy="true">
-      <div className="skeleton" style={{ width: '45%', height: 48 }} />
-      <div className="metric-grid">
-        {[1, 2, 3, 4].map((n) => (
-          <div className="skeleton" key={n} style={{ height: 140 }} />
-        ))}
-      </div>
-      <div className="skeleton" style={{ height: 360 }} />
+    <div className="workspace-loading" role="status" aria-live="polite">
+      <span className="eyebrow">FORKCHECK</span>
+      <h1>Preparando tu espacio…</h1>
+      <p>Consultando el estado actualizado de tus equipos.</p>
+      <div className="loading-skeleton" aria-hidden />
+      <div className="loading-skeleton short" aria-hidden />
     </div>
   );
 }

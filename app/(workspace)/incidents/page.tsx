@@ -5,12 +5,16 @@ import { parseFilters, type SearchParams } from '@/lib/validations/filters';
 export default async function Incidents({ searchParams }: { searchParams: SearchParams }) {
   const { db } = await session();
   const f = parseFilters(await searchParams);
-  const { data, error, count } = await db
+  let query = db
     .from('incidents')
     .select('*', { count: 'exact' })
     .neq('status', 'CLOSED')
     .order('created_at', { ascending: false })
     .range((f.page - 1) * 20, f.page * 20 - 1);
+  if (f.equipment) query = query.eq('equipment_id', f.equipment);
+  const { data, error, count } = await query;
+  const link = (page: number) =>
+    `?${new URLSearchParams({ page: String(page), ...(f.equipment ? { equipment: f.equipment } : {}) })}`;
   if (error) throw error;
   return (
     <>
@@ -18,7 +22,15 @@ export default async function Incidents({ searchParams }: { searchParams: Search
         <div>
           <p className="eyebrow">SEGURIDAD / SEGUIMIENTO</p>
           <h1>Incidencias abiertas</h1>
-          <p>{count} incidencias en tus sucursales autorizadas.</p>
+          <p>
+            {count} incidencias{' '}
+            {f.equipment ? 'del equipo seleccionado' : 'en tus sucursales autorizadas'}.
+          </p>
+          {f.equipment && (
+            <Link className="text-link" href="/incidents">
+              Ver todas las incidencias autorizadas
+            </Link>
+          )}
         </div>
         <Link className="button" href="/providers">
           Contactos de renting
@@ -51,12 +63,12 @@ export default async function Incidents({ searchParams }: { searchParams: Search
       </section>
       <div className="pagination">
         {f.page > 1 && (
-          <Link className="button" href={`?page=${f.page - 1}`}>
+          <Link className="button" href={link(f.page - 1)}>
             Anterior
           </Link>
         )}
         {f.page * 20 < (count ?? 0) && (
-          <Link className="button" href={`?page=${f.page + 1}`}>
+          <Link className="button" href={link(f.page + 1)}>
             Siguiente
           </Link>
         )}

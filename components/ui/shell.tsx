@@ -4,6 +4,7 @@ import { logout } from '@/app/actions';
 import { WorkspaceNavigation, WorkspaceLocation } from './navigation';
 import { can } from '@/lib/permissions';
 import type { Profile } from '@/types/domain';
+import { homeFor } from '@/lib/navigation';
 export function Shell({ profile, children }: { profile: Profile; children: React.ReactNode }) {
   return (
     <div className="app-shell">
@@ -16,6 +17,7 @@ export function Shell({ profile, children }: { profile: Profile; children: React
         </Link>
         <div className="workspace-label">CONTROL DE OPERACIONES</div>
         <WorkspaceNavigation
+          home={homeFor(profile)}
           dashboard={can(profile, 'dashboard')}
           configure={can(profile, 'configure')}
           mobileLogout={

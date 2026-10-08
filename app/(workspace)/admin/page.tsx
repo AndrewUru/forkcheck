@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   ShieldAlert,
   ArrowRight,
+  Clock3,
 } from 'lucide-react';
 import { requirePermission } from '@/lib/auth/session';
 import { metricsSchema } from '@/types/domain';
@@ -17,10 +18,10 @@ export default async function Dashboard({ searchParams }: { searchParams: Search
   const f = parseFilters(await searchParams);
   const [org, regions, branches, zones, types] = await Promise.all([
     db.from('organizations').select('*').single(),
-    db.from('regions').select('*').order('name'),
-    db.from('branches').select('*').order('name'),
-    db.from('zones').select('*').order('name'),
-    db.from('equipment_types').select('*').order('name'),
+    db.from('regions').select('*').order('name').limit(200),
+    db.from('branches').select('*').order('name').limit(200),
+    db.from('zones').select('*').order('name').limit(500),
+    db.from('equipment_types').select('*').order('name').limit(200),
   ]);
   if (org.error || regions.error || branches.error || zones.error || types.error)
     throw new Error('No se pueden cargar los filtros');
@@ -40,6 +41,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Search
     .from('equipment_overview')
     .select('*')
     .in('status', ['BLOCKED', 'WARNING'])
+    .order('status', { ascending: false })
     .order('internal_code')
     .limit(6);
   if (f.region) attentionQuery = attentionQuery.eq('region_id', f.region);
@@ -50,6 +52,34 @@ export default async function Dashboard({ searchParams }: { searchParams: Search
   if (f.model) attentionQuery = attentionQuery.eq('model', f.model);
   const { data: attention, error: attentionError } = await attentionQuery;
   if (attentionError) throw attentionError;
+  let overdueQuery = db
+    .from('equipment_overview')
+    .select('*', { count: 'exact' })
+    .neq('status', 'INACTIVE')
+    .lt('next_inspection', f.date)
+    .order('next_inspection')
+    .order('id')
+    .limit(4);
+  if (f.region) overdueQuery = overdueQuery.eq('region_id', f.region);
+  if (f.branch) overdueQuery = overdueQuery.eq('branch_id', f.branch);
+  if (f.zone) overdueQuery = overdueQuery.eq('zone_id', f.zone);
+  if (f.type) overdueQuery = overdueQuery.eq('equipment_type_id', f.type);
+  if (f.brand) overdueQuery = overdueQuery.eq('brand', f.brand);
+  if (f.model) overdueQuery = overdueQuery.eq('model', f.model);
+  const overdue = await overdueQuery;
+  if (overdue.error) throw new Error('No se pudieron cargar las revisiones atrasadas');
+  const scope = Object.fromEntries(
+    Object.entries({
+      region: f.region,
+      branch: f.branch,
+      zone: f.zone,
+      type: f.type,
+      brand: f.brand,
+      model: f.model,
+    }).filter((entry): entry is [string, string] => typeof entry[1] === 'string'),
+  );
+  const blockedLink = `/equipment?${new URLSearchParams({ ...scope, status: 'BLOCKED' })}`;
+  const overdueLink = `/equipment?${new URLSearchParams({ ...scope, before: f.date })}`;
   const compliance = m.due ? Math.round((m.completed / m.due) * 100) : null;
   return (
     <>
@@ -57,7 +87,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Search
         <div>
           <p className="eyebrow">{org.data.name} / VISIÓN OPERATIVA</p>
           <h1>Centro de control</h1>
-          <p>Hola, {profile.first_name}. Así está tu operación.</p>
+          <p>Hola, {profile.first_name}. Empieza por lo que necesita atención.</p>
         </div>
         <Link className="button primary" href="/equipment">
           Ver equipos <ArrowUpRight size={18} />
@@ -70,6 +100,42 @@ export default async function Dashboard({ searchParams }: { searchParams: Search
         zones={zones.data}
         types={types.data}
       />
+      <section className="priority-section" aria-labelledby="priority-title">
+        <div className="section-label">
+          <h2 id="priority-title">Lo primero, lo importante.</h2>
+          <span>Prioridades del alcance seleccionado</span>
+        </div>
+        <div className="priority-grid">
+          <Link className="priority-card priority-danger" href={blockedLink}>
+            <ShieldAlert size={25} />
+            <span>Equipos bloqueados</span>
+            <strong>{m.blocked}</strong>
+            <p>No deben utilizarse hasta su resolución autorizada.</p>
+            <b>
+              Revisar equipos <ArrowRight size={17} />
+            </b>
+          </Link>
+          <Link className="priority-card priority-caution" href={overdueLink}>
+            <Clock3 size={25} />
+            <span>Equipos con revisión atrasada</span>
+            <strong>{overdue.count ?? 0}</strong>
+            <p>Próxima revisión anterior al {f.date}.</p>
+            <b>
+              Organizar revisiones <ArrowRight size={17} />
+            </b>
+          </Link>
+          <Link className="priority-card priority-blue" href="/incidents">
+            <AlertTriangle size={25} />
+            <span>Incidencias abiertas</span>
+            <strong>{m.incidents}</strong>
+            <p>{m.critical} críticas en este alcance.</p>
+            <b>
+              Abrir bandeja de incidencias <ArrowRight size={17} />
+            </b>
+            <small>La bandeja muestra todas las incidencias autorizadas.</small>
+          </Link>
+        </div>
+      </section>
       <div className="section-label">
         <span>ESTADO DE LA FLOTA</span>
         <span>Datos actuales · {m.branches} sucursales en el alcance</span>
@@ -120,7 +186,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Search
           <div className="panel-heading">
             <div>
               <h2>Necesitan atención</h2>
-              <p>Equipos con alertas activas</p>
+              <p>Hasta seis equipos; bloqueados primero</p>
             </div>
             <span className="count-badge">{m.blocked + m.warning}</span>
           </div>
@@ -181,6 +247,39 @@ export default async function Dashboard({ searchParams }: { searchParams: Search
           </div>
         </section>
       </div>
+      <section className="panel overdue-panel">
+        <div className="panel-heading">
+          <div>
+            <h2>Próximas acciones</h2>
+            <p>Hasta cuatro equipos con la revisión más antigua.</p>
+          </div>
+          <Link className="text-link" href={overdueLink}>
+            Ver pendientes <ArrowRight size={17} />
+          </Link>
+        </div>
+        {overdue.data.length ? (
+          <div className="asset-list">
+            {overdue.data.map((e) => (
+              <Link className="asset-row" key={e.id} href={`/equipment/${e.public_code}`}>
+                <span className="asset-icon">
+                  <ClipboardCheck size={22} />
+                </span>
+                <div className="asset-row-name">
+                  <strong>{e.internal_code}</strong>
+                  <span>
+                    {e.branch_name ?? 'Sin sucursal'} · pendiente desde {e.next_inspection}
+                  </span>
+                </div>
+                <ArrowRight size={18} />
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <Empty title="Sin revisiones atrasadas en este alcance">
+            Puedes consultar la programación de la fecha en el calendario.
+          </Empty>
+        )}
+      </section>
       <div className="operational-note">
         <ShieldAlert size={20} />
         <span>

@@ -5,7 +5,13 @@ import { isMissingFleetSchema } from '@/lib/equipment/schema';
 import { can } from '@/lib/permissions';
 import { startInspection } from '@/app/actions';
 import { todayIn } from '@/lib/validations/filters';
-export async function MyEquipment({ quickStart = false }: { quickStart?: boolean }) {
+export async function MyEquipment({
+  quickStart = false,
+  subtle = false,
+}: {
+  quickStart?: boolean;
+  subtle?: boolean;
+}) {
   const { db, profile } = await session();
   const { data: assignment, error } = await db
     .from('equipment_operators')
@@ -97,7 +103,7 @@ export async function MyEquipment({ quickStart = false }: { quickStart?: boolean
             </form>
           )}
         <Link
-          className={`button ${quickStart ? '' : 'primary'}`}
+          className={`button ${quickStart || subtle ? '' : 'primary'}`}
           href={`/equipment/${e.public_code}`}
         >
           Ver mi equipo →

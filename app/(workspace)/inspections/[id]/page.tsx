@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { session } from '@/lib/auth/session';
 import { can } from '@/lib/permissions';
 import { InspectionForm } from '@/components/inspections/form';
-import { Status } from '@/components/ui/status';
+import { InspectionResult } from '@/components/inspections/result';
 import type { AnswerKind } from '@/types/domain';
 const answerLabels: Record<AnswerKind, string> = {
   OK: 'Correcto',
@@ -35,23 +35,27 @@ export default async function InspectionPage({ params }: { params: Promise<{ id:
       .from('checklist_items')
       .select('*')
       .eq('version_id', i.checklist_version_id)
-      .order('sort_order'),
+      .order('sort_order')
+      .limit(501),
     db
       .from('checklist_sections')
       .select('*')
       .eq('version_id', i.checklist_version_id)
-      .order('sort_order'),
+      .order('sort_order')
+      .limit(101),
     db.from('checklist_versions').select('*').eq('id', i.checklist_version_id).single(),
     db.from('equipment').select('*').eq('id', i.equipment_id).maybeSingle(),
   ]);
   if (items.error || sections.error || version.error || equipment.error)
     throw new Error('No se puede cargar la inspección');
+  if (items.data.length > 500 || sections.data.length > 100)
+    throw new Error('La versión supera el límite de visualización. Contacta con el administrador.');
   let content;
   if (i.completed_at) {
     const [answers, signature, incidents, organization] = await Promise.all([
-      db.from('inspection_answers').select('*').eq('inspection_id', i.id),
+      db.from('inspection_answers').select('*').eq('inspection_id', i.id).limit(501),
       db.from('signatures').select('*').eq('inspection_id', i.id).single(),
-      db.from('incidents').select('id').eq('inspection_id', i.id),
+      db.from('incidents').select('id').eq('inspection_id', i.id).limit(501),
       db.from('organizations').select('timezone').single(),
     ]);
     if (answers.error || signature.error || incidents.error || organization.error)
@@ -83,43 +87,14 @@ export default async function InspectionPage({ params }: { params: Promise<{ id:
     if (signatureError) throw signatureError;
     content = (
       <>
-        <div className="success-banner" role="status">
-          <h2>Inspección registrada</h2>
-          <p>
-            Resultado: {i.overall_status ? answerLabels[i.overall_status] : 'Registrado'} ·{' '}
-            {new Date(i.completed_at).toLocaleString('es-ES', {
-              timeZone: organization.data.timezone,
-            })}
-          </p>
-          <p>{incidents.data.length} incidencias registradas en esta revisión.</p>
-          {equipment.data && (
-            <div className="inspection-result-state">
-              <span>Estado actual del equipo</span>
-              <Status status={equipment.data.status} />
-            </div>
-          )}
-          {equipment.data?.status === 'BLOCKED' && (
-            <p className="text-red">
-              <strong>No utilices este equipo.</strong> El bloqueo sigue activo hasta su resolución
-              autorizada.
-            </p>
-          )}
-          <div className="heading-actions">
-            <Link className="button dark" href="/shift">
-              Volver a mi turno
-            </Link>
-            {equipment.data && (
-              <Link className="button" href={`/equipment/${equipment.data.public_code}`}>
-                Ver equipo
-              </Link>
-            )}
-            {incidents.data.length > 0 && (
-              <Link className="button" href="/incidents">
-                Consultar incidencias
-              </Link>
-            )}
-          </div>
-        </div>
+        <InspectionResult
+          equipment={equipment.data}
+          outcome={i.overall_status ? answerLabels[i.overall_status] : 'Registrado'}
+          completed={new Date(i.completed_at).toLocaleString('es-ES', {
+            timeZone: organization.data.timezone,
+          })}
+          incidents={incidents.data.length}
+        />
         <section className="panel detail-panel">
           {items.data.map((item) => {
             const a = answers.data.find((a) => a.checklist_item_id === item.id);

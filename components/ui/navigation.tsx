@@ -21,15 +21,20 @@ export function WorkspaceNavigation({
   dashboard,
   configure,
   mobileLogout,
+  home,
 }: {
   dashboard: boolean;
   configure: boolean;
   mobileLogout: React.ReactNode;
+  home: string;
 }) {
   const pathname = usePathname();
-  const home = dashboard ? '/admin' : '/shift';
   const primary = [
-    { href: home, label: 'Inicio', icon: House },
+    {
+      href: home,
+      label: home === '/scan' ? 'Escanear' : 'Inicio',
+      icon: home === '/scan' ? ScanLine : House,
+    },
     { href: '/equipment', label: 'Equipos', icon: Truck },
     { href: '/incidents', label: 'Incidencias', icon: AlertTriangle },
     { href: '/profile', label: 'Perfil', icon: UserRound },
@@ -46,7 +51,9 @@ export function WorkspaceNavigation({
     { href: '/providers', label: 'Proveedores de renting', icon: Building2 },
     { href: '/assistant', label: 'Asistente IA', icon: Sparkles },
     ...(dashboard ? [{ href: '/admin/branches', label: 'Sucursales', icon: Building2 }] : []),
-    { href: '/scan', label: 'Acceso por QR', icon: ScanLine },
+    ...(home === '/scan'
+      ? [{ href: '/shift', label: 'Mi turno', icon: ClipboardCheck }]
+      : [{ href: '/scan', label: 'Escanear QR', icon: ScanLine }]),
   ];
   const active = (href: string) =>
     pathname === href || (href !== home && pathname.startsWith(`${href}/`));
@@ -68,8 +75,12 @@ export function WorkspaceNavigation({
         {links([
           {
             href: home,
-            label: dashboard ? 'Centro de control' : 'Mi turno',
-            icon: dashboard ? LayoutDashboard : House,
+            label: dashboard
+              ? 'Centro de control'
+              : home === '/scan'
+                ? 'Escanear equipo'
+                : 'Mi turno',
+            icon: dashboard ? LayoutDashboard : home === '/scan' ? ScanLine : House,
           },
           ...primary.slice(1),
           ...secondary,

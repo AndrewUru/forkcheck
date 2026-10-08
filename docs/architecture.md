@@ -2,9 +2,17 @@
 
 ## Experiencia del turno
 
-- El inicio del operario dirige a `/shift`: equipo personal, revisiones en curso propias y una lista limitada de equipos pendientes dentro de RLS. Las fechas usan la zona horaria de la organización; no se calculan métricas desde esa lista.
+- El inicio del operario dirige siempre a `/scan`, incluso si tiene equipo asignado. Sin sesión se requiere login; el cambio obligatorio de contraseña sigue teniendo prioridad. El administrador conserva su centro de control. `/shift` permanece como resumen del turno, accesible desde el escáner.
 - La navegación móvil prioriza Inicio, Equipos, Incidencias y Perfil; el resto sigue accesible en un menú secundario. Los administradores mantienen su centro de control como inicio.
 - Antes de firmar se muestra un resumen derivado de las respuestas locales y de las mismas reglas de bloqueo del dominio. El resultado definitivo y el estado actual del equipo se consultan después de la transacción de finalización. No se modifican permisos, persistencia ni bloqueo automático.
+
+## Experiencia guiada y escáner dentro de la aplicación
+
+- El escáner utiliza la cámara tras pulsar «Activar cámara», con permiso del navegador, preferencia por cámara trasera y decodificación local mediante jsQR. No guarda ni envía fotogramas. Detiene la cámara al salir, ocultar la página o reconocer un QR válido. Permite también introducir un código o enlace de etiqueta. Solo acepta rutas de equipo del mismo origen y códigos públicos válidos; el servidor vuelve a verificar sesión y RLS antes de abrir el equipo.
+- La ficha del equipo prioriza el estado real, la revisión pendiente/en curso y una siguiente acción clara. El equipo asignado queda como acceso secundario en el escáner. Se conserva la consulta de ficha, QR, históricos y contactos; no se autorizan máquinas por una animación ni por el resultado del último checklist.
+- La inspección se divide en pasos de hasta cinco preguntas dentro de cada sección, con validación de respuestas, notas y fotografías antes de avanzar, resumen y firma al final. No hay autoselección de respuestas. El formulario mantiene respuestas y archivos en memoria y conserva el envío agregado, las evidencias privadas y los reintentos existentes. La confirmación se invalida al cambiar respuestas; no se incorpora almacenamiento offline.
+- El resultado diferencia revisión guardada de estado actual del equipo, mantiene visibles los bloqueos previos y ofrece el siguiente destino. El dashboard prioriza bloqueos, equipos con revisiones atrasadas e incidencias; los totales proceden de RPC o conteos exactos y las listas muestran explícitamente sus límites.
+- Se incorporan estados de carga y transiciones breves respetando movimiento reducido. Se verifica móvil a 390 px, navegación por teclado y fallos de cámara. Los tests con cámara simulada no sustituyen la prueba en un teléfono físico sobre HTTPS.
 
 ## Demostración con varios participantes
 

@@ -1,42 +1,38 @@
-import { redirect } from 'next/navigation';
-import { ScanLine } from 'lucide-react';
-async function openEquipment(form: FormData) {
-  'use server';
-  const code = String(form.get('code') ?? '').trim();
-  if (!/^[a-zA-Z0-9-]{4,80}$/.test(code)) redirect('/scan?error=code');
-  redirect(`/equipment/${encodeURIComponent(code)}`);
-}
-export default async function Scan({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>;
-}) {
-  const { error } = await searchParams;
+﻿import Link from 'next/link';
+import { ArrowRight, ClipboardCheck } from 'lucide-react';
+import { session } from '@/lib/auth/session';
+import { QrScanner } from '@/components/equipment/qr-scanner';
+import { MyEquipment } from '@/components/equipment/my-equipment';
+export default async function Scan() {
+  const { profile } = await session();
   return (
-    <div className="scan-page">
-      <ScanLine size={64} />
-      <p className="eyebrow">ACCESO RÁPIDO</p>
-      <h1>Escanea. Revisa. Continúa.</h1>
-      <p>
-        Abre la cámara de tu teléfono y apunta al QR del equipo. El enlace te llevará directamente a
-        su ficha.
-      </p>
-      <section className="panel detail-panel">
-        <h2>¿Tienes el código del QR?</h2>
-        <form action={openEquipment}>
-          <label>
-            Código público
-            <input
-              name="code"
-              required
-              placeholder="Código de la etiqueta QR"
-              pattern="[a-zA-Z0-9\-]{4,80}"
-            />
-          </label>
-          {error && <p role="alert">Introduce un código válido.</p>}
-          <button className="button primary full">Abrir equipo</button>
-        </form>
-      </section>
+    <div className="scan-experience">
+      <header className="scan-intro">
+        <p className="eyebrow">HOLA, {profile.nickname || profile.first_name}</p>
+        <h1>
+          Escanea tu equipo.
+          <br />
+          <span>Empieza con seguridad.</span>
+        </h1>
+        <p>Apunta al QR, comprueba el estado y comienza tu revisión.</p>
+      </header>
+      <div className="scan-layout">
+        <QrScanner />
+        <aside className="scan-alternatives">
+          <MyEquipment subtle />
+          <Link className="scan-turn-link" href="/shift">
+            <ClipboardCheck size={24} />
+            <span>
+              <strong>Mi turno</strong>
+              <small>Revisiones en curso y pendientes</small>
+            </span>
+            <ArrowRight size={20} />
+          </Link>
+          <p className="muted">
+            También puedes <Link href="/equipment">buscar en tus equipos autorizados</Link>.
+          </p>
+        </aside>
+      </div>
     </div>
   );
 }
