@@ -243,6 +243,28 @@ it('pins open inspections to their original version while new inspections adopt 
   expect(
     (await db.query('select * from checklist_items where version_id=$1', [oldVersion])).rows.length,
   ).toBeGreaterThan(0);
+  // Finalization must still evaluate the OLD questions after publication and retirement.
+  const oldQuestions = (
+    await db.query<{ id: string }>('select id from checklist_items where version_id=$1', [
+      oldVersion,
+    ])
+  ).rows;
+  await db.query(
+    "insert into storage.objects(bucket_id,name,metadata) values('inspection-evidence',$1,$2::jsonb)",
+    [`${org}/${first}/signature.png`, JSON.stringify({ mimetype: 'image/png', size: 123 })],
+  );
+  await db.query('select finish_inspection($1,$2::jsonb)', [
+    first,
+    JSON.stringify(
+      oldQuestions.map((q) => ({ item_id: q.id, answer: 'OK', notes: '', photos: [] })),
+    ),
+  ]);
+  expect(
+    await scalar<string>(
+      'select checklist_version_id value from inspections where id=$1 and completed_at is not null',
+      [first],
+    ),
+  ).toBe(oldVersion);
 });
 it('retires idempotently, removes availability, blocks new assignments and retains audit/history', async () => {
   await db.query('select retire_checklist_template($1)', [template]);

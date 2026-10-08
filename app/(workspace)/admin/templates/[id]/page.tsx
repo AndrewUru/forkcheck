@@ -64,7 +64,17 @@ export default async function TemplatePage({
     throw new Error('No se pudo cargar el contenido del checklist.');
   const content = sections.data.map((s) => ({
     title: s.title,
-    items: items.data.filter((q) => q.section_id === s.id),
+    items: items.data
+      .filter((q) => q.section_id === s.id)
+      .map((q) => ({
+        label: q.label,
+        description: q.description,
+        required: q.required,
+        severity_when_failed: q.severity_when_failed,
+        requires_photo_on_failure: q.requires_photo_on_failure,
+        blocks_equipment_on_failure: q.blocks_equipment_on_failure,
+        allowed_answers: q.allowed_answers,
+      })),
   }));
   const frequency = z.enum(frequencies).parse(t.frequency);
   const historyLink = (p: number) =>
@@ -137,7 +147,11 @@ export default async function TemplatePage({
         />
       ) : (
         <section className="panel detail-panel">
-          <p>Solo lectura. Para cambiar una versión publicada, abre un nuevo borrador.</p>
+          <p>
+            {t.archived_at
+              ? 'Solo lectura. Puedes duplicar esta versión como una plantilla nueva.'
+              : 'Solo lectura. Para cambiar una versión publicada, abre un nuevo borrador.'}
+          </p>
           <ChecklistPreview sections={content} />
         </section>
       )}

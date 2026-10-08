@@ -99,24 +99,26 @@ export function WorkspaceLocation() {
       ? 'Ficha del equipo'
       : pathname === '/admin'
         ? 'Centro de control'
-        : pathname.startsWith('/admin/users')
-          ? 'Usuarios'
-          : pathname.startsWith('/admin/assignments')
-            ? 'Asignaciones'
-            : pathname.startsWith('/admin/branches')
-              ? 'Sucursales'
-              : pathname.startsWith('/admin/equipment')
-                ? 'Nuevo equipo'
-                : ({
-                    '/shift': 'Mi turno',
-                    '/equipment': 'Equipos',
-                    '/calendar': 'Calendario diario',
-                    '/incidents': 'Incidencias',
-                    '/profile': 'Mi perfil',
-                    '/scan': 'Acceso por QR',
-                    '/providers': 'Proveedores',
-                    '/assistant': 'Asistente IA',
-                  }[pathname] ?? 'Operaciones');
+        : pathname.startsWith('/admin/templates')
+          ? 'Plantillas'
+          : pathname.startsWith('/admin/users')
+            ? 'Usuarios'
+            : pathname.startsWith('/admin/assignments')
+              ? 'Asignaciones'
+              : pathname.startsWith('/admin/branches')
+                ? 'Sucursales'
+                : pathname.startsWith('/admin/equipment')
+                  ? 'Nuevo equipo'
+                  : ({
+                      '/shift': 'Mi turno',
+                      '/equipment': 'Equipos',
+                      '/calendar': 'Calendario diario',
+                      '/incidents': 'Incidencias',
+                      '/profile': 'Mi perfil',
+                      '/scan': 'Acceso por QR',
+                      '/providers': 'Proveedores',
+                      '/assistant': 'Asistente IA',
+                    }[pathname] ?? 'Operaciones');
   return (
     <span>
       Operaciones / <strong>{label}</strong>

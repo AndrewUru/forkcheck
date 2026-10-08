@@ -33,3 +33,13 @@ test('password recovery route requires a configured backend', async ({ page }) =
   await page.goto('/change-password');
   await expect(page).toHaveURL(/\/setup$/);
 });
+test('template management requires a configured backend', async ({ page }) => {
+  for (const route of [
+    '/admin/templates',
+    '/admin/templates/new',
+    '/admin/templates/10000000-0000-4000-8000-000000000001',
+  ]) {
+    await page.goto(route);
+    await expect(page).toHaveURL(/\/setup$/);
+  }
+});
