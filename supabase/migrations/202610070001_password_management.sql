@@ -17,18 +17,20 @@ create policy profiles_read on public.profiles for select to authenticated using
 -- A fresh administrative nonce differentiates a reset from the subsequent user change.
 create function private.password_changed() returns trigger
 language plpgsql security definer set search_path = '' as $$
-declare actor public.profiles; target public.profiles; reset_requested boolean;
+declare actor public.profiles; target public.profiles; reset_requested boolean; final_metadata jsonb;
 begin
- reset_requested := (new.raw_app_meta_data->>'forkcheck_reset_nonce') is distinct from (old.raw_app_meta_data->>'forkcheck_reset_nonce');
- if not reset_requested and new.encrypted_password is not distinct from old.encrypted_password then return new; end if;
+ -- GoTrue writes the hash and app metadata in separate statements in ONE transaction.
+ -- Run at commit and inspect the final metadata, not the password UPDATE's snapshot.
+ select raw_app_meta_data into final_metadata from auth.users where id=new.id;
+ reset_requested := (final_metadata->>'forkcheck_reset_nonce') is distinct from (old.raw_app_meta_data->>'forkcheck_reset_nonce');
  if reset_requested then
    select * into actor from public.profiles
-   where id=(new.raw_app_meta_data->>'forkcheck_reset_actor')::uuid and active and not must_change_password for update;
+   where id=(final_metadata->>'forkcheck_reset_actor')::uuid and active and not must_change_password for update;
    if actor.id is null or actor.role <> 'CORPORATE_ADMIN' then raise exception 'Not authorized'; end if;
    select * into target from public.profiles where id=new.id and organization_id=actor.organization_id and active for update;
    if target.id is null or target.id=actor.id or target.role='SUPERADMIN' then raise exception 'User unavailable'; end if;
    if target.password_reset_at > now() - interval '1 minute' then raise exception 'Reset rate limited'; end if;
-   if nullif(new.raw_app_meta_data->>'forkcheck_reset_nonce','') is null
+   if nullif(final_metadata->>'forkcheck_reset_nonce','') is null
       or nullif(new.encrypted_password,'') is null
       or new.encrypted_password is not distinct from old.encrypted_password then raise exception 'Password change required'; end if;
    update public.profiles set must_change_password=true, password_reset_at=now() where id=target.id;
@@ -46,8 +48,10 @@ begin
  return new;
 end $$;
 revoke all on function private.password_changed() from public,anon,authenticated;
-create trigger forkcheck_password_changed after update of encrypted_password,raw_app_meta_data on auth.users
-for each row execute function private.password_changed();
+create constraint trigger forkcheck_password_changed after update on auth.users
+deferrable initially deferred for each row
+when (new.encrypted_password is distinct from old.encrypted_password)
+execute function private.password_changed();
 
 -- These RPCs authorize directly from profiles rather than private.org_id().
 create or replace function public.register_employee(p_auth_id uuid, p_input jsonb) returns uuid

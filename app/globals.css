@@ -126,6 +126,17 @@
 .management-form label {
   margin-bottom: 18px;
 }
+.password-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+.password-page > section {
+  width: 100%;
+  max-width: 560px;
+  min-width: 0;
+}
 .form-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

@@ -69,11 +69,12 @@ Se mantiene Supabase real. La instalación manual en SQL Editor se genera desde 
 
 - Perfil permite cambiar la contraseña tras verificar la actual con Supabase Auth. Los alias internos no reciben correo. CORPORATE_ADMIN restablece únicamente cuentas activas de su organización, excepto la propia y SUPERADMIN, desde la Edge Function `manage-users`.
 - El restablecimiento usa una contraseña aleatoria y un identificador nuevo en `app_metadata` (solo modificable por Auth administrativo). Un trigger sobre `auth.users` valida de nuevo al administrador y al destinatario y establece `profiles.must_change_password`, con auditoría sin secretos, dentro de la transacción que cambia la contraseña. No se copian hashes de Auth a tablas de negocio.
+- El trigger es de restricción, diferido hasta el commit: GoTrue escribe contraseña y metadatos en sentencias separadas dentro de una transacción. Lee los metadatos finales para distinguir el restablecimiento. Referencia: [implementación de actualización administrativa de Supabase Auth](https://github.com/supabase/auth/blob/master/internal/api/admin.go).
 - Un cambio posterior real de contraseña elimina esa obligación mediante el mismo trigger. Cambiar metadatos o llamar a una RPC no la elimina. Las consultas RLS y RPC de negocio bloquean al perfil pendiente; solo puede consultar su propio perfil activo, cambiar contraseña o salir. La página de cambio obligatorio queda fuera del layout de trabajo para evitar bucles de redirección.
 - La contraseña temporal se devuelve únicamente en la respuesta del restablecimiento, no se persiste ni se recupera después. Ante una respuesta perdida, el administrador puede generar otra. Se limita cada cuenta a un restablecimiento por minuto. Las URLs de evidencia ya firmadas conservan su breve caducidad.
 - La migración nueva y la actualización de la Edge Function se instalan explícitamente, en ese orden. Los tests PGlite verifican trigger, rollback, RLS y RPC con un esquema Auth mínimo; no sustituyen la validación real de GoTrue, su política de contraseñas y sesiones.
 
-## Paleta visual (continuación)
+## Paleta visual
 
 - Se aplica la referencia visual facilitada: azul principal #0047AB, azul oscuro #083D82, blanco y amarillo #E9AB19. Cian #008EC4, verde #00AC83, rojo #E40036 y violeta #6B56A2 quedan como acentos secundarios.
 - Los colores de estado conservan su significado; los textos usan variantes oscuras para mantener contraste. La paleta se comparte entre navegación, formularios, login e iconos de la PWA mediante variables CSS.

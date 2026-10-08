@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { requirePermission } from '@/lib/auth/session';
 import { parseFilters, type SearchParams } from '@/lib/validations/filters';
 import { CreateEmployeeForm, DeactivateEmployeeForm } from '@/components/profile/user-forms';
+import { ResetPasswordForm } from '@/components/profile/password-forms';
 export default async function UsersPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, profile } = await requirePermission('configure');
   const f = parseFilters(await searchParams);
@@ -23,7 +24,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
         <div>
           <p className="eyebrow">ADMINISTRACIÓN</p>
           <h1>Usuarios</h1>
-          <p>Altas y bajas de tu organización.</p>
+          <p>Altas, bajas y recuperación de acceso de tu organización.</p>
         </div>
         <Link className="button" href="/admin/assignments">
           Ver asignaciones de máquinas
@@ -57,7 +58,11 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
               {u.employee_id} · {u.role} · {u.active ? 'Activo' : 'Baja'}
             </p>
             {u.active && u.id !== profile.id && u.role !== 'SUPERADMIN' && (
-              <DeactivateEmployeeForm id={u.id} employee={u.employee_id} />
+              <>
+                {u.must_change_password && <p>Pendiente de cambiar su contraseña temporal.</p>}
+                <ResetPasswordForm id={u.id} employee={u.employee_id} />
+                <DeactivateEmployeeForm id={u.id} employee={u.employee_id} />
+              </>
             )}
           </article>
         ))}

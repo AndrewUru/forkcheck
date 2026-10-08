@@ -2,8 +2,14 @@ import { session } from '@/lib/auth/session';
 import { NicknameForm } from '@/components/profile/nickname-form';
 import { MyEquipment } from '@/components/equipment/my-equipment';
 import { FleetUpdateNotice } from '@/components/equipment/update-notice';
-export default async function ProfilePage() {
+import { ChangePasswordForm } from '@/components/profile/password-forms';
+export default async function ProfilePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ password?: string }>;
+}) {
   const { profile } = await session();
+  const { password } = await searchParams;
   return (
     <>
       <div className="page-heading">
@@ -23,6 +29,11 @@ export default async function ProfilePage() {
           <NicknameForm nickname={profile.nickname} />
         </section>
       )}
+      <section className="panel detail-panel profile-panel">
+        <h2>Cambiar contraseña</h2>
+        {password === 'changed' && <p role="status">Tu contraseña se ha cambiado correctamente.</p>}
+        <ChangePasswordForm />
+      </section>
       <MyEquipment />
     </>
   );

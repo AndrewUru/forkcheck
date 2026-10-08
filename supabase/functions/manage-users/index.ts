@@ -59,12 +59,18 @@ Deno.serve(async (request: Request) => {
   } catch {
     return reply(400, 'Invalid input');
   }
-  const reset = z.object({ action: z.literal('reset_password'), user_id: z.uuid() }).safeParse(body);
+  const reset = z
+    .object({ action: z.literal('reset_password'), user_id: z.uuid() })
+    .safeParse(body);
   if (reset.success) {
     // Fail closed until the migration (including the Auth trigger) is installed.
     if (typeof actor.must_change_password !== 'boolean') return reply(503, 'Migration required');
-    const { data: target } = await db.from('profiles').select('id,role,active')
-      .eq('id', reset.data.user_id).eq('organization_id', actor.organization_id).single();
+    const { data: target } = await db
+      .from('profiles')
+      .select('id,role,active')
+      .eq('id', reset.data.user_id)
+      .eq('organization_id', actor.organization_id)
+      .single();
     if (!target?.active || target.id === actor.id || target.role === 'SUPERADMIN')
       return reply(403, 'User unavailable');
     const admin = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
@@ -77,7 +83,10 @@ Deno.serve(async (request: Request) => {
       app_metadata: { forkcheck_reset_nonce: crypto.randomUUID(), forkcheck_reset_actor: actor.id },
     });
     if (error) return reply(400, 'Reset failed; wait a minute before retrying');
-    return Response.json({ temporaryPassword: password }, { headers: { 'Cache-Control': 'no-store' } });
+    return Response.json(
+      { temporaryPassword: password },
+      { headers: { 'Cache-Control': 'no-store' } },
+    );
   }
   const parsed = inputSchema.safeParse(body);
   if (!parsed.success) return reply(400, 'Invalid input');

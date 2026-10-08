@@ -64,7 +64,18 @@ Variables requeridas por `npm run provision:user`:
 npm run provision:user
 ```
 
-El script usa `auth.admin.createUser`, crea el perfil y valida las sucursales contra la organización. Si falla el perfil revierte la identidad Auth; si falla la asignación, desactiva el perfil. No muestra la contraseña. La recuperación de credenciales se gestiona por un administrador mediante Supabase Auth: los alias `.invalid` no reciben correo. Para implantar recuperación por correo o SSO debe añadirse un canal verificado, no enviar correos a esos alias.
+El script usa `auth.admin.createUser`, crea el perfil y valida las sucursales contra la organización. Si falla el perfil revierte la identidad Auth; si falla la asignación, desactiva el perfil. No muestra la contraseña. La recuperación se gestiona desde **Administración → Usuarios → Restablecer contraseña**, después de verificar la identidad del empleado. Los alias `.invalid` no reciben correo. Para implantar recuperación por correo o SSO debe añadirse un canal verificado, no enviar correos a esos alias.
+
+### Contraseñas: instalación y uso
+
+En un entorno existente, aplicar primero la migración `supabase/migrations/202610070001_password_management.sql` mediante el procedimiento habitual de migraciones, y después actualizar `manage-users` con `npx supabase functions deploy manage-users --project-ref <proyecto>`. Revisar siempre el proyecto de destino; estos pasos no se ejecutan automáticamente. No añadir la clave administrativa a Next.js o Vercel. En Supabase Auth, configurar longitud mínima de contraseña de 12 caracteres y mantener desactivadas las altas públicas.
+
+- El administrador puede restablecer cuentas activas de su organización, excepto la propia y SUPERADMIN. La contraseña temporal se muestra solo en esa respuesta: entregarla individualmente y cerrar el aviso. No queda disponible para consultarla después. Si se pierde, generar otra tras esperar un minuto.
+- El empleado entra con la temporal y debe elegir una contraseña personal. Hasta entonces, el servidor y RLS bloquean el acceso a datos y operaciones de negocio, incluso con una sesión anterior. Las URLs de evidencia ya firmadas mantienen su breve caducidad.
+- **Perfil → Cambiar contraseña** pide la actual y dos entradas coincidentes de la nueva (12–128 caracteres). El trigger de Auth registra el cambio y elimina la obligación en la misma transacción, sin registrar contraseñas ni hashes.
+- Para el único administrador que pierda acceso, utilizar el procedimiento de soporte autorizado de Supabase Auth; otro CORPORATE_ADMIN activo de la organización también puede restablecer su cuenta. La interfaz no permite restablecerse a uno mismo.
+
+Validación en un proyecto de prueba después de instalar: restablecer un empleado, comprobar que la contraseña anterior falla, que la temporal obliga al cambio y bloquea consultas/RPC, cambiarla, salir y entrar con la nueva; comprobar también rechazo de contraseña actual incorrecta, otra organización, usuario inactivo y auditoría sin secretos. Probar con la configuración real de seguridad de Auth (incluidas políticas de reautenticación). PGlite y los mocks locales no validan GoTrue ni el despliegue de la Edge Function.
 
 ## Roles y acceso
 

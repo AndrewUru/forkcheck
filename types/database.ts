@@ -38,7 +38,9 @@ export interface Database {
         timezone: string;
         created_at: string;
       }>;
-      profiles: Table<Profile & { must_change_password: boolean; password_reset_at: string | null }>;
+      profiles: Table<
+        Profile & { must_change_password: boolean; password_reset_at: string | null }
+      >;
       regions: Table<Named>;
       branches: Table<Named & { region_id: string }>;
       zones: Table<Named & { branch_id: string }>;

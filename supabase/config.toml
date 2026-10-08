@@ -19,6 +19,7 @@ sql_paths = ["./seed.sql"]
 enabled = true
 site_url = "http://localhost:3000"
 enable_signup = false
+minimum_password_length = 12
 
 [storage]
 enabled = true

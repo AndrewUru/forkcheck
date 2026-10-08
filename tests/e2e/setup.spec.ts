@@ -29,3 +29,7 @@ test('manifest and installable icons are available', async ({ request }) => {
   expect(manifest.display).toBe('standalone');
   expect((await request.get('/icon-192.png')).ok()).toBe(true);
 });
+test('password recovery route requires a configured backend', async ({ page }) => {
+  await page.goto('/change-password');
+  await expect(page).toHaveURL(/\/setup$/);
+});
