@@ -1,5 +1,14 @@
 # Decisiones de arquitectura — primera entrega
 
+## Roles de negocio y compatibilidad (octubre de 2026)
+
+- Los roles de negocio son OPERARIO, JEFE_ALMACEN, DELEGADO_CENTRO, EHS, DIRECTOR_REGIONAL y DIRECTOR_GENERAL. La jerarquía no implica herencia de permisos. Las etiquetas se centralizan para mostrarlas en español.
+- Una migración incremental renombra SUPERVISOR a JEFE_ALMACEN y REGIONAL_MANAGER a DIRECTOR_REGIONAL, conservando identidades, sucursales e históricos. MANTENIMIENTO y CORPORATE_ADMIN mantienen sus permisos como roles anteriores; no se convierten en EHS o delegado. SUPERADMIN sigue separado y sin acceso empresarial implícito. Las nuevas altas de la interfaz solo ofrecen los seis roles de negocio; la provisión administrativa conserva los roles técnicos y anteriores.
+- JEFE_ALMACEN conserva la inspección y consulta del antiguo supervisor y puede crear únicamente OPERARIO en sus sucursales autorizadas, además de asignar o retirar asignaciones personales de operarios. Debe tener alcance sobre la ubicación del equipo nuevo y del actualmente asignado. No puede crear mandos, ampliar sucursales, dar bajas de usuarios, restablecer contraseñas, crear/retirar equipos ni editar plantillas. Interfaz, Server Actions, Edge Function y PostgreSQL vuelven a comprobar estas restricciones.
+- DELEGADO_CENTRO y EHS reciben por ahora consulta y dashboard de las sucursales explícitamente asignadas. Sus facultades de escritura quedan pendientes de definición. DIRECTOR_REGIONAL conserva las sucursales explícitas del antiguo regional (no se amplían automáticamente por región); DIRECTOR_GENERAL consulta toda su organización. Dirección no recibe acciones operativas. Las preferencias personales y el cambio de contraseña siguen disponibles para todos.
+- RLS permite al jefe consultar operarios que compartan una sucursal autorizada y asignaciones de equipos dentro de su alcance. Las funciones de autorización derivan identidad, organización y rol desde la sesión, fijan search_path y no son ejecutables por PUBLIC/anon. El alta vuelve a comprobar cada sucursal antes de escribir. Las cuentas inactivas o con cambio de contraseña pendiente no pueden operar.
+- La instalación requiere aplicar la migración y actualizar `manage-users` junto con la aplicación. No se ejecutan despliegues desde este cambio. Las pruebas locales cubren migración de perfiles existentes, matriz de permisos, aislamiento, escalada de rol/sucursal, asignaciones y lectura de dirección; no sustituyen una prueba real de GoTrue/PostgREST/Storage.
+
 ## Experiencia del turno
 
 - El inicio del operario dirige siempre a `/scan`, incluso si tiene equipo asignado. Sin sesión se requiere login; el cambio obligatorio de contraseña sigue teniendo prioridad. El administrador conserva su centro de control. `/shift` permanece como resumen del turno, accesible desde el escáner.

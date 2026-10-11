@@ -9,7 +9,7 @@ export async function EquipmentOperators({
   equipmentId: string;
   page: number;
 }) {
-  const { db } = await requirePermission('configure');
+  const { db } = await requirePermission('assign_equipment');
   const assignments = await db
     .from('equipment_operators')
     .select('id,user_id', { count: 'exact' })

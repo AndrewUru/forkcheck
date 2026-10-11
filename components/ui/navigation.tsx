@@ -20,11 +20,15 @@ import {
 export function WorkspaceNavigation({
   dashboard,
   configure,
+  createUsers,
+  assignEquipment,
   mobileLogout,
   home,
 }: {
   dashboard: boolean;
   configure: boolean;
+  createUsers: boolean;
+  assignEquipment: boolean;
   mobileLogout: React.ReactNode;
   home: string;
 }) {
@@ -41,13 +45,13 @@ export function WorkspaceNavigation({
   ];
   const secondary = [
     { href: '/calendar', label: 'Calendario diario', icon: CalendarDays },
+    ...(createUsers ? [{ href: '/admin/users', label: 'Usuarios', icon: Users }] : []),
     ...(configure
       ? [
-          { href: '/admin/users', label: 'Usuarios', icon: Users },
           { href: '/admin/templates', label: 'Plantillas', icon: ClipboardCheck },
-          { href: '/admin/assignments', label: 'Asignaciones', icon: Users },
         ]
       : []),
+    ...(assignEquipment ? [{ href: '/admin/assignments', label: 'Asignaciones', icon: Users }] : []),
     { href: '/providers', label: 'Proveedores de renting', icon: Building2 },
     { href: '/assistant', label: 'Asistente IA', icon: Sparkles },
     ...(dashboard ? [{ href: '/admin/branches', label: 'Sucursales', icon: Building2 }] : []),

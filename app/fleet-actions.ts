@@ -1,6 +1,7 @@
 'use server';
 import { revalidatePath } from 'next/cache';
 import { session } from '@/lib/auth/session';
+import { can } from '@/lib/permissions';
 import {
   createEquipmentSchema,
   assignmentSchema,
@@ -74,8 +75,8 @@ export async function createEquipment(input: unknown): Promise<FleetActionResult
 }
 export async function assignEquipment(input: unknown): Promise<FleetActionResult> {
   const { db, profile } = await session();
-  if (profile.role !== 'CORPORATE_ADMIN')
-    return { error: 'Solo el administrador de empresa puede cambiar asignaciones.' };
+  if (!can(profile, 'assign_equipment'))
+    return { error: 'Tu rol no permite cambiar asignaciones.' };
   const parsed = assignmentSchema.safeParse(input);
   if (!parsed.success) return { error: 'Revisa el usuario y el código de equipo.' };
   const { error } = await db.rpc('assign_equipment', {

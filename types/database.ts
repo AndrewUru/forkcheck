@@ -5,6 +5,7 @@ import type {
   Incident,
   Inspection,
   Profile,
+  Role,
 } from './domain';
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 type Tenant = { id: string; organization_id: string };
@@ -205,7 +206,7 @@ export interface Database {
         Returns: Json;
       };
     };
-    Enums: Record<string, never>;
+    Enums: { app_role: Role };
     CompositeTypes: Record<string, never>;
   };
 }

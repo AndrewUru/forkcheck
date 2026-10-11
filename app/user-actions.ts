@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { requirePermission } from '@/lib/auth/session';
 import { newEmployee } from '@/lib/validations/users';
 export async function createEmployee(_previous: { message: string }, form: FormData) {
-  const { db } = await requirePermission('configure');
+  const { db, profile } = await requirePermission('create_users');
   const input = newEmployee.safeParse({
     ...Object.fromEntries(form),
     branches: form.getAll('branches'),
@@ -14,6 +14,8 @@ export async function createEmployee(_previous: { message: string }, form: FormD
       message:
         'Revisa los datos: contraseña de 12 caracteres, ID en minúsculas y sucursales para roles operativos.',
     };
+  if (profile.role === 'JEFE_ALMACEN' && input.data.role !== 'OPERARIO')
+    return { message: 'El jefe de almacén solo puede crear operarios.' };
   const { error } = await db.functions.invoke('manage-users', { body: input.data });
   if (error)
     return {

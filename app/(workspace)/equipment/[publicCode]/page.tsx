@@ -136,7 +136,7 @@ export default async function EquipmentDetail({
           </div>
         )}
         <div className="detail-columns">
-          {can(profile, 'configure') && (
+          {can(profile, 'assign_equipment') && (
             <EquipmentOperators equipmentId={e.id} page={filters.page} />
           )}
           <section className="panel detail-panel">

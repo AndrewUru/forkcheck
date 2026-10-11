@@ -1,7 +1,7 @@
 import { PGlite } from '@electric-sql/pglite';
 import { pgcrypto } from '@electric-sql/pglite/contrib/pgcrypto';
 import { readFile, readdir } from 'node:fs/promises';
-export async function createFleetTestDatabase() {
+export async function createFleetTestDatabase(lastMigration?: string) {
   const db = new PGlite({ extensions: { pgcrypto } });
   await db.exec(`create schema auth; create schema storage; create schema extensions;
  create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
@@ -12,7 +12,7 @@ export async function createFleetTestDatabase() {
  create table storage.objects(id uuid default gen_random_uuid(),bucket_id text,name text,metadata jsonb,unique(bucket_id,name));
  alter table storage.objects enable row level security; grant select,insert,update,delete on storage.objects to authenticated;`);
   for (const file of (await readdir('supabase/migrations'))
-    .filter((f) => f.endsWith('.sql'))
+    .filter((f) => f.endsWith('.sql') && (!lastMigration || f <= lastMigration))
     .sort())
     await db.exec(await readFile(`supabase/migrations/${file}`, 'utf8'));
   await db.exec(await readFile('supabase/seed.sql', 'utf8'));

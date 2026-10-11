@@ -37,7 +37,7 @@ const { data: org, error: orgError } = await db
   .eq('slug', input.organization)
   .single();
 if (orgError) throw new Error('Organization unavailable');
-if (!['CORPORATE_ADMIN', 'SUPERADMIN'].includes(input.role) && !input.branches.length)
+if (!['CORPORATE_ADMIN', 'SUPERADMIN', 'DIRECTOR_GENERAL'].includes(input.role) && !input.branches.length)
   throw new Error('Explicit branch assignments required');
 if (input.branches.length) {
   const { data, error } = await db

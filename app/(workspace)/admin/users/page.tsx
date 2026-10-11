@@ -3,8 +3,11 @@ import { requirePermission } from '@/lib/auth/session';
 import { parseFilters, type SearchParams } from '@/lib/validations/filters';
 import { CreateEmployeeForm, DeactivateEmployeeForm } from '@/components/profile/user-forms';
 import { ResetPasswordForm } from '@/components/profile/password-forms';
+import { can } from '@/lib/permissions';
+import { roleLabels } from '@/types/domain';
 export default async function UsersPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, profile } = await requirePermission('configure');
+  const { db, profile } = await requirePermission('create_users');
+  const admin = can(profile, 'configure');
   const f = parseFilters(await searchParams);
   let query = db
     .from('profiles')
@@ -12,6 +15,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
     .order('employee_id')
     .range((f.page - 1) * 20, f.page * 20 - 1);
   if (f.q) query = query.ilike('employee_id', `%${f.q.replace(/[%_]/g, '')}%`);
+  if (!admin) query = query.eq('role', 'OPERARIO');
   const [users, branches] = await Promise.all([
     query,
     db.from('branches').select('id,name').order('name').limit(101),
@@ -24,7 +28,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
         <div>
           <p className="eyebrow">ADMINISTRACIÓN</p>
           <h1>Usuarios</h1>
-          <p>Altas, bajas y recuperación de acceso de tu organización.</p>
+          <p>{admin ? 'Altas, bajas y recuperación de acceso de tu organización.' : 'Alta de operarios en tus sucursales autorizadas.'}</p>
         </div>
         <Link className="button" href="/admin/assignments">
           Ver asignaciones de máquinas
@@ -36,7 +40,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
           alcance completo.
         </p>
       ) : (
-        <CreateEmployeeForm branches={branches.data} />
+        <CreateEmployeeForm branches={branches.data} operatorOnly={!admin} />
       )}
       <form className="search-bar">
         <label>
@@ -55,9 +59,9 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
               {u.first_name} {u.last_name}
             </h2>
             <p>
-              {u.employee_id} · {u.role} · {u.active ? 'Activo' : 'Baja'}
+              {u.employee_id} · {roleLabels[u.role]} · {u.active ? 'Activo' : 'Baja'}
             </p>
-            {u.active && u.id !== profile.id && u.role !== 'SUPERADMIN' && (
+            {admin && u.active && u.id !== profile.id && u.role !== 'SUPERADMIN' && (
               <>
                 {u.must_change_password && <p>Pendiente de cambiar su contraseña temporal.</p>}
                 <ResetPasswordForm id={u.id} employee={u.employee_id} />

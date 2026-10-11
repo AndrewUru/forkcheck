@@ -354,7 +354,7 @@ describe('real PostgreSQL migrations, RLS and transactional workflow', () => {
       db.query("select dashboard_metrics((now() at time zone 'Europe/Madrid')::date)"),
     ).rejects.toThrow('Not authorized');
     await admin();
-    await db.query("update profiles set role='SUPERVISOR' where id=$1", [user]);
+    await db.query("update profiles set role='JEFE_ALMACEN' where id=$1", [user]);
     await asUser();
     const row = await scalar<{ metrics: { equipment: number; completed: number } }>(
       "select dashboard_metrics((now() at time zone 'Europe/Madrid')::date) metrics",

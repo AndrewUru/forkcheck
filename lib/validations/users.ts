@@ -1,11 +1,6 @@
 import { z } from 'zod';
-export const employeeRoles = [
-  'OPERARIO',
-  'MANTENIMIENTO',
-  'SUPERVISOR',
-  'REGIONAL_MANAGER',
-  'CORPORATE_ADMIN',
-] as const;
+import { businessRoles } from '@/types/domain';
+export const employeeRoles = businessRoles;
 export const newEmployee = z
   .object({
     employee_id: z
@@ -18,6 +13,6 @@ export const newEmployee = z
     role: z.enum(employeeRoles),
     branches: z.array(z.uuid()).max(100),
   })
-  .refine((v) => v.role === 'CORPORATE_ADMIN' || v.branches.length > 0, {
+  .refine((v) => v.role === 'DIRECTOR_GENERAL' || v.branches.length > 0, {
     message: 'Selecciona al menos una sucursal.',
   });

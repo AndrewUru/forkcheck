@@ -5,8 +5,9 @@ import { isMissingFleetSchema } from '@/lib/equipment/schema';
 import { FleetUpdateNotice } from '@/components/equipment/update-notice';
 import { AssignmentForm } from '@/components/equipment/assignment-form';
 import { Empty } from '@/components/ui/status';
+import { roleLabels } from '@/types/domain';
 export default async function AssignmentsPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db } = await requirePermission('configure');
+  const { db, profile } = await requirePermission('assign_equipment');
   const f = parseFilters(await searchParams);
   let query = db
     .from('profiles')
@@ -15,6 +16,7 @@ export default async function AssignmentsPage({ searchParams }: { searchParams: 
     .order('employee_id')
     .range((f.page - 1) * 20, f.page * 20 - 1);
   if (f.q) query = query.ilike('employee_id', `%${f.q.replace(/[%_]/g, '')}%`);
+  if (profile.role === 'JEFE_ALMACEN') query = query.eq('role', 'OPERARIO');
   const users = await query;
   if (users.error) throw users.error;
   const assignmentQuery = db.from('equipment_operators').select('*').is('ended_at', null);
@@ -62,12 +64,12 @@ export default async function AssignmentsPage({ searchParams }: { searchParams: 
           return (
             <article className="panel detail-panel" key={u.id}>
               <p className="eyebrow">
-                {u.employee_id} · {u.role}
+                {u.employee_id} · {roleLabels[u.role]}
               </p>
               <h2>
                 {u.first_name} {u.last_name}
               </h2>
-              <p>{code ? `Equipo actual: ${code}` : 'Sin equipo asignado'}</p>
+              <p>{code ? `Equipo actual: ${code}` : 'Sin equipo asignado visible en tu alcance'}</p>
               <AssignmentForm
                 key={`${u.id}-${a?.id ?? 'none'}`}
                 employeeId={u.employee_id}

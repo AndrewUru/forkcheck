@@ -3,6 +3,7 @@ import { NicknameForm } from '@/components/profile/nickname-form';
 import { MyEquipment } from '@/components/equipment/my-equipment';
 import { FleetUpdateNotice } from '@/components/equipment/update-notice';
 import { ChangePasswordForm } from '@/components/profile/password-forms';
+import { roleLabels } from '@/types/domain';
 export default async function ProfilePage({
   searchParams,
 }: {
@@ -19,6 +20,7 @@ export default async function ProfilePage({
           <p>
             {profile.first_name} {profile.last_name} · ID {profile.employee_id}
           </p>
+          <p>{roleLabels[profile.role]}</p>
         </div>
       </div>
       {profile.nickname === undefined ? (

@@ -2,7 +2,11 @@
 import { useActionState } from 'react';
 import { createEmployee, deactivateEmployee } from '@/app/user-actions';
 import { employeeRoles } from '@/lib/validations/users';
-export function CreateEmployeeForm({ branches }: { branches: { id: string; name: string }[] }) {
+import { roleLabels } from '@/types/domain';
+export function CreateEmployeeForm({ branches, operatorOnly }: {
+  branches: { id: string; name: string }[];
+  operatorOnly: boolean;
+}) {
   const [state, action, pending] = useActionState(createEmployee, { message: '' });
   return (
     <form action={action} className="panel detail-panel management-form">
@@ -40,13 +44,14 @@ export function CreateEmployeeForm({ branches }: { branches: { id: string; name:
         <label>
           Rol
           <select name="role">
-            {employeeRoles.map((role) => (
-              <option key={role}>{role}</option>
+            {employeeRoles.filter((role) => !operatorOnly || role === 'OPERARIO').map((role) => (
+              <option key={role} value={role}>{roleLabels[role]}</option>
             ))}
           </select>
         </label>
         <fieldset>
-          <legend>Sucursales autorizadas (obligatorias salvo administrador)</legend>
+          <legend>Sucursales autorizadas{operatorOnly ? ' (obligatorias)' : ' (obligatorias salvo director general)'}</legend>
+          {!operatorOnly && <p>Dirección regional consulta las sucursales que selecciones. Dirección general consulta toda la organización.</p>}
           {branches.map((branch) => (
             <label key={branch.id} className="user-checkbox">
               <input name="branches" type="checkbox" value={branch.id} /> {branch.name}

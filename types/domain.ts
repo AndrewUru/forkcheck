@@ -1,14 +1,31 @@
 import { z } from 'zod';
 
-export const roles = [
+export const businessRoles = [
   'OPERARIO',
+  'JEFE_ALMACEN',
+  'DELEGADO_CENTRO',
+  'EHS',
+  'DIRECTOR_REGIONAL',
+  'DIRECTOR_GENERAL',
+] as const;
+export const roles = [
+  ...businessRoles,
   'MANTENIMIENTO',
-  'SUPERVISOR',
-  'REGIONAL_MANAGER',
   'CORPORATE_ADMIN',
   'SUPERADMIN',
 ] as const;
 export type Role = (typeof roles)[number];
+export const roleLabels: Record<Role, string> = {
+  OPERARIO: 'Operario',
+  JEFE_ALMACEN: 'Jefe de almacén',
+  DELEGADO_CENTRO: 'Delegado del centro',
+  EHS: 'Equipo EHS',
+  DIRECTOR_REGIONAL: 'Director regional',
+  DIRECTOR_GENERAL: 'Director general',
+  MANTENIMIENTO: 'Mantenimiento (anterior)',
+  CORPORATE_ADMIN: 'Administración de empresa (anterior)',
+  SUPERADMIN: 'Administración técnica',
+};
 export const statuses = ['OPERATIVE', 'WARNING', 'BLOCKED', 'MAINTENANCE', 'INACTIVE'] as const;
 export type EquipmentStatus = (typeof statuses)[number];
 export const answerKinds = ['OK', 'WARNING', 'CRITICAL', 'NOT_APPLICABLE'] as const;

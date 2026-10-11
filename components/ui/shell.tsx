@@ -3,7 +3,7 @@ import { ClipboardCheck, LogOut } from 'lucide-react';
 import { logout } from '@/app/actions';
 import { WorkspaceNavigation, WorkspaceLocation } from './navigation';
 import { can } from '@/lib/permissions';
-import type { Profile } from '@/types/domain';
+import { roleLabels, type Profile } from '@/types/domain';
 import { homeFor } from '@/lib/navigation';
 export function Shell({ profile, children }: { profile: Profile; children: React.ReactNode }) {
   return (
@@ -20,6 +20,8 @@ export function Shell({ profile, children }: { profile: Profile; children: React
           home={homeFor(profile)}
           dashboard={can(profile, 'dashboard')}
           configure={can(profile, 'configure')}
+          createUsers={can(profile, 'create_users')}
+          assignEquipment={can(profile, 'assign_equipment')}
           mobileLogout={
             <form action={logout}>
               <button className="button full">
@@ -35,7 +37,7 @@ export function Shell({ profile, children }: { profile: Profile; children: React
           </div>
           <div>
             <strong>{profile.nickname || `${profile.first_name} ${profile.last_name}`}</strong>
-            <small>{profile.role.replaceAll('_', ' ')}</small>
+            <small>{roleLabels[profile.role]}</small>
           </div>
           <form action={logout}>
             <button className="icon-button" title="Cerrar sesión" aria-label="Cerrar sesión">
