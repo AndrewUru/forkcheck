@@ -6,7 +6,7 @@ import { FleetUpdateNotice } from '@/components/equipment/update-notice';
 import { checklistSchemaReady } from '@/lib/checklists';
 import { ChecklistUpdateNotice } from '@/components/checklists/update-notice';
 export default async function NewEquipmentPage() {
-  const { db } = await requirePermission('configure');
+  const { db } = await requirePermission('manage_equipment');
   const check = await db.from('equipment_operators').select('id').limit(1);
   if (isMissingFleetSchema(check.error)) return <FleetUpdateNotice />;
   if (check.error) throw check.error;

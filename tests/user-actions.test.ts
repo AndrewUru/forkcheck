@@ -23,7 +23,7 @@ function form(role = 'OPERARIO') {
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.permission.mockResolvedValue({
-    profile: { role: 'JEFE_ALMACEN' },
+    profile: { role: 'JEFE_ALMACEN', active: true },
     db: { functions: { invoke: mocks.invoke } },
   });
   mocks.invoke.mockResolvedValue({ error: null });
@@ -47,7 +47,7 @@ it.each(['JEFE_ALMACEN', 'DELEGADO_CENTRO', 'EHS', 'DIRECTOR_REGIONAL', 'DIRECTO
   'rejects a chief posting a crafted %s role before invoking Auth',
   async (role) => {
     expect((await createEmployee({ message: '' }, form(role))).message).toContain(
-      'solo puede crear operarios',
+      'no permite crear ese tipo',
     );
     expect(mocks.invoke).not.toHaveBeenCalled();
   },

@@ -1,5 +1,13 @@
 # Decisiones de arquitectura — primera entrega
 
+## Gestión compartida de EHS, jefes y operarios
+
+- EHS puede crear OPERARIO y JEFE_ALMACEN en sus centros autorizados, designar operarios existentes como jefes y cambiar los centros de jefes existentes. No puede crear EHS, delegados, directores ni administradores. La designación exige alcance sobre todos los centros anteriores y nuevos del destinatario; rechaza cuentas inactivas, la propia cuenta y cambios concurrentes. No cambia su identidad ni el histórico. Una promoción cierra su asignación personal de operario y exige terminar las inspecciones abiertas antes de designarlo.
+- EHS y JEFE_ALMACEN comparten alta, modificación y asignación de maquinaria a operarios en sus centros. Editar permite código interno, marca, modelo, serie, año, centro y zona. Tipo y plan de inspección permanecen fijos para conservar su compatibilidad; estado, QR e históricos no son editables. Los traslados requieren acceso al origen y destino, ausencia de inspecciones abiertas y autorización de los operarios asignados en el centro de destino. Se conserva el historial de ubicación y se rechazan ediciones obsoletas.
+- OPERARIO puede autoasignarse una máquina desde su ficha o quitar su asignación actual. Una RPC deriva al destinatario desde auth.uid(); no acepta un usuario del navegador. Comprueba el centro de la máquina contra las sucursales autorizadas del operario y preserva una única asignación personal activa y el historial. Varios operarios pueden compartir máquina por turnos. La asignación no autoriza el uso ni elimina bloqueos; no admite equipos retirados.
+- El alcance EHS continúa siendo el de sus centros explícitos, sin acceso implícito a toda la organización. Dar bajas, restablecer contraseñas, retirar equipos, editar plantillas y desbloquear no forman parte de esta ampliación. DELEGADO_CENTRO y dirección conservan consulta. Estas decisiones sustituyen las restricciones provisionales de EHS y alta de maquinaria descritas en la sección anterior de roles.
+- Se añade una migración posterior a `202610110001_business_roles.sql`, manteniendo las ya aplicadas intactas. Nuevas RPC, RLS, tipos, acciones y formularios se validan con pruebas de autorización, aislamiento, concurrencia optimista, rollback y conservación del histórico. No se despliega ni modifica Supabase alojado automáticamente.
+
 ## Roles de negocio y compatibilidad (octubre de 2026)
 
 - Los roles de negocio son OPERARIO, JEFE_ALMACEN, DELEGADO_CENTRO, EHS, DIRECTOR_REGIONAL y DIRECTOR_GENERAL. La jerarquía no implica herencia de permisos. Las etiquetas se centralizan para mostrarlas en español.

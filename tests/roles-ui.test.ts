@@ -28,25 +28,33 @@ it.each([
     }),
   );
   expect(html.includes('href="/admin/users"')).toBe(
-    role === 'JEFE_ALMACEN' || role === 'CORPORATE_ADMIN',
+    role === 'JEFE_ALMACEN' || role === 'EHS' || role === 'CORPORATE_ADMIN',
   );
   expect(html.includes('href="/admin/assignments"')).toBe(
-    role === 'JEFE_ALMACEN' || role === 'CORPORATE_ADMIN',
+    role === 'JEFE_ALMACEN' || role === 'EHS' || role === 'CORPORATE_ADMIN',
   );
   expect(html.includes('href="/admin/templates"')).toBe(role === 'CORPORATE_ADMIN');
 });
 it('offers only the operator role to a chief and readable business labels to administrators', () => {
   const chief = renderToStaticMarkup(
-    createElement(CreateEmployeeForm, { branches: [], operatorOnly: true }),
+    createElement(CreateEmployeeForm, { branches: [], actorRole: 'JEFE_ALMACEN' }),
   );
   expect(chief).toContain('<option value="OPERARIO">Operario</option>');
   expect(chief.match(/<option /g)).toHaveLength(1);
   const admin = renderToStaticMarkup(
-    createElement(CreateEmployeeForm, { branches: [], operatorOnly: false }),
+    createElement(CreateEmployeeForm, { branches: [], actorRole: 'CORPORATE_ADMIN' }),
   );
   expect(admin.match(/<option /g)).toHaveLength(6);
   expect(admin).toContain(roleLabels.JEFE_ALMACEN);
   expect(admin).toContain(roleLabels.DELEGADO_CENTRO);
   expect(admin).not.toContain('CORPORATE_ADMIN');
   expect(admin).not.toContain('SUPERADMIN');
+});
+it('offers EHS only operator and chief roles', () => {
+  const html = renderToStaticMarkup(
+    createElement(CreateEmployeeForm, { branches: [], actorRole: 'EHS' }),
+  );
+  expect(html.match(/<option /g)).toHaveLength(2);
+  expect(html).toContain('value="JEFE_ALMACEN"');
+  expect(html).not.toContain('DIRECTOR_GENERAL');
 });

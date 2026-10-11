@@ -95,21 +95,23 @@ El mantenimiento lo realiza la empresa de renting. **Proveedores de renting** (`
 
 | Rol               | Alcance                                                                               |
 | ----------------- | ------------------------------------------------------------------------------------- |
-| OPERARIO          | Equipos e histórico de sucursales autorizadas; realiza y firma sus inspecciones       |
-| JEFE_ALMACEN      | Consulta e inspecciones; crea operarios y asigna carretillas dentro de sus sucursales |
+| OPERARIO          | Inspecciones y autoasignación de maquinaria de su centro |
+| JEFE_ALMACEN      | Consulta e inspecciones; crea operarios y crea, modifica y asigna maquinaria en su alcance |
 | DELEGADO_CENTRO   | Consulta y dashboard de sus sucursales; acciones adicionales pendientes de definición |
-| EHS               | Consulta y dashboard de sus sucursales; acciones adicionales pendientes de definición |
+| EHS               | Crea/designa jefes y operarios; comparte alta, modificación y asignación de maquinaria con los jefes |
 | DIRECTOR_REGIONAL | Solo consulta y dashboard de sucursales explícitamente asignadas                      |
 | DIRECTOR_GENERAL  | Solo consulta y dashboard de toda su organización                                     |
 | MANTENIMIENTO     | Compatibilidad: lectura técnica de sucursales asignadas                               |
 | CORPORATE_ADMIN   | Compatibilidad: administración de su organización                                     |
 | SUPERADMIN        | Administración técnica sin acceso empresarial implícito                               |
 
-Los roles no heredan permisos por jerarquía. La dirección conserva la gestión de su propia contraseña y nickname, sin acciones operativas. CORPORATE_ADMIN mantiene las altas/bajas de equipos, usuarios, recuperación de contraseñas, proveedores y plantillas. JEFE_ALMACEN no recibe esas facultades: solo alta de operarios y asignaciones personales, además de la consulta e inspección del antiguo supervisor. **No se conceden escrituras SQL directas al navegador**.
+Los roles no heredan permisos por jerarquía. La dirección conserva la gestión de su propia contraseña y nickname, sin acciones operativas. CORPORATE_ADMIN mantiene la administración anterior. EHS y JEFE_ALMACEN comparten la gestión de maquinaria dentro de sus centros; las bajas, recuperación de contraseñas, proveedores y plantillas siguen reservadas al administrador. El operario solo puede modificar su propia asignación. **No se conceden escrituras SQL directas al navegador**.
 
 Para activar estos roles en una instalación existente, aplicar una vez `supabase/migrations/202610110001_business_roles.sql` después de las migraciones anteriores, actualizar la Edge Function `manage-users` y publicar la versión de la aplicación en una ventana coordinada. El cambio renombra `SUPERVISOR` → `JEFE_ALMACEN` y `REGIONAL_MANAGER` → `DIRECTOR_REGIONAL` sin cambiar IDs, sucursales ni históricos. No transforma `MANTENIMIENTO` ni `CORPORATE_ADMIN` en otros cargos. Las altas desde la interfaz solo ofrecen los seis roles de negocio; la provisión administrativa conserva los roles anteriores y técnicos. Véase [la guía de roles](docs/roles.md). Este cambio no despliega ni modifica el Supabase alojado automáticamente.
 
 Para actualizar el proyecto Supabase ya existente sin volver a ejecutar el seed, ejecuta `npm run setup:fleet` y pega el contenido de `artifacts/update-fleet.sql` en su SQL Editor. Ejecuta el bloque una sola vez; después recarga la app. La actualización debe aplicarse con acceso de propietario a ese proyecto.
+
+La gestión compartida EHS/jefes y la autoasignación requieren además `supabase/migrations/202610110002_shared_fleet.sql`, posterior a la migración de roles, y la actualización de `manage-users` y de la aplicación. No se reejecutan migraciones anteriores ni el seed.
 
 ## Datos y garantías
 

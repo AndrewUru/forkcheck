@@ -15,7 +15,8 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
     .order('employee_id')
     .range((f.page - 1) * 20, f.page * 20 - 1);
   if (f.q) query = query.ilike('employee_id', `%${f.q.replace(/[%_]/g, '')}%`);
-  if (!admin) query = query.eq('role', 'OPERARIO');
+  if (profile.role === 'JEFE_ALMACEN') query = query.eq('role', 'OPERARIO');
+  if (profile.role === 'EHS') query = query.in('role', ['OPERARIO', 'JEFE_ALMACEN']);
   const [users, branches] = await Promise.all([
     query,
     db.from('branches').select('id,name').order('name').limit(101),
@@ -31,7 +32,9 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
           <p>
             {admin
               ? 'Altas, bajas y recuperación de acceso de tu organización.'
-              : 'Alta de operarios en tus sucursales autorizadas.'}
+              : profile.role === 'EHS'
+                ? 'Alta de operarios y designación de jefes en tus centros autorizados.'
+                : 'Alta de operarios en tus sucursales autorizadas.'}
           </p>
         </div>
         <Link className="button" href="/admin/assignments">
@@ -44,7 +47,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
           alcance completo.
         </p>
       ) : (
-        <CreateEmployeeForm branches={branches.data} operatorOnly={!admin} />
+        <CreateEmployeeForm branches={branches.data} actorRole={profile.role} />
       )}
       <form className="search-bar">
         <label>
@@ -65,6 +68,14 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
             <p>
               {u.employee_id} · {roleLabels[u.role]} · {u.active ? 'Activo' : 'Baja'}
             </p>
+            {can(profile, 'designate_chiefs') &&
+              u.active &&
+              u.id !== profile.id &&
+              (u.role === 'OPERARIO' || u.role === 'JEFE_ALMACEN') && (
+                <Link className="button" href={`/admin/users/${u.id}/chief`}>
+                  {u.role === 'OPERARIO' ? 'Designar jefe de almacén' : 'Cambiar centros del jefe'}
+                </Link>
+              )}
             {admin && u.active && u.id !== profile.id && u.role !== 'SUPERADMIN' && (
               <>
                 {u.must_change_password && <p>Pendiente de cambiar su contraseña temporal.</p>}

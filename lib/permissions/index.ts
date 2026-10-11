@@ -1,10 +1,12 @@
-import type { Profile, Role } from '@/types/domain';
+import { businessRoles, type Profile, type Role } from '@/types/domain';
 export type Permission =
   | 'inspect'
   | 'dashboard'
   | 'manage_equipment'
   | 'create_users'
   | 'assign_equipment'
+  | 'self_assign_equipment'
+  | 'designate_chiefs'
   | 'maintain'
   | 'configure';
 const permissions: Record<Permission, readonly Role[]> = {
@@ -17,14 +19,24 @@ const permissions: Record<Permission, readonly Role[]> = {
     'DIRECTOR_GENERAL',
     'CORPORATE_ADMIN',
   ],
-  manage_equipment: ['CORPORATE_ADMIN'],
-  create_users: ['JEFE_ALMACEN', 'CORPORATE_ADMIN'],
-  assign_equipment: ['JEFE_ALMACEN', 'CORPORATE_ADMIN'],
+  manage_equipment: ['EHS', 'JEFE_ALMACEN', 'CORPORATE_ADMIN'],
+  create_users: ['EHS', 'JEFE_ALMACEN', 'CORPORATE_ADMIN'],
+  assign_equipment: ['EHS', 'JEFE_ALMACEN', 'CORPORATE_ADMIN'],
+  self_assign_equipment: ['OPERARIO'],
+  designate_chiefs: ['EHS', 'CORPORATE_ADMIN'],
   maintain: ['MANTENIMIENTO', 'CORPORATE_ADMIN'],
   configure: ['CORPORATE_ADMIN'],
 };
 export function can(profile: Pick<Profile, 'role' | 'active'>, permission: Permission) {
   return profile.active && permissions[permission].includes(profile.role);
+}
+export function rolesForNewUsers(
+  profile: Pick<Profile, 'role' | 'active'>,
+): readonly (typeof businessRoles)[number][] {
+  if (!profile.active) return [];
+  if (profile.role === 'CORPORATE_ADMIN') return businessRoles;
+  if (profile.role === 'EHS') return ['OPERARIO', 'JEFE_ALMACEN'];
+  return profile.role === 'JEFE_ALMACEN' ? ['OPERARIO'] : [];
 }
 export function hasScope(
   profile: Profile,

@@ -16,7 +16,7 @@ export default async function AssignmentsPage({ searchParams }: { searchParams: 
     .order('employee_id')
     .range((f.page - 1) * 20, f.page * 20 - 1);
   if (f.q) query = query.ilike('employee_id', `%${f.q.replace(/[%_]/g, '')}%`);
-  if (profile.role === 'JEFE_ALMACEN') query = query.eq('role', 'OPERARIO');
+  if (profile.role !== 'CORPORATE_ADMIN') query = query.eq('role', 'OPERARIO');
   const users = await query;
   if (users.error) throw users.error;
   const assignmentQuery = db.from('equipment_operators').select('*').is('ended_at', null);

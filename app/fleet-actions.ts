@@ -5,12 +5,20 @@ import { can } from '@/lib/permissions';
 import {
   createEquipmentSchema,
   assignmentSchema,
+  selfAssignmentSchema,
+  updateEquipmentSchema,
   type FleetActionResult,
 } from '@/lib/validations/fleet';
 import { isMissingFleetSchema } from '@/lib/equipment/schema';
 import { nicknameSchema, retirementSchema } from '@/lib/validations/fleet';
 
 function mutationError(error: { code?: string; message?: string }) {
+  if (error.message?.includes('Equipment changed'))
+    return 'El equipo ha cambiado. Recarga antes de guardar.';
+  if (error.message?.includes('still in progress'))
+    return 'Termina las inspecciones abiertas antes de cambiar la ubicación.';
+  if (error.message?.includes('Assigned operators lack'))
+    return 'Los operarios asignados deben tener acceso al centro de destino. Revisa sus asignaciones antes de trasladar el equipo.';
   if (isMissingFleetSchema(error))
     return 'La actualización de gestión de flota todavía no está aplicada en Supabase.';
   if (error.code === '23505') return 'Ese código de equipo ya existe. Utiliza un código único.';
@@ -62,8 +70,7 @@ export async function retireEquipment(input: unknown): Promise<FleetActionResult
 }
 export async function createEquipment(input: unknown): Promise<FleetActionResult> {
   const { db, profile } = await session();
-  if (profile.role !== 'CORPORATE_ADMIN')
-    return { error: 'Solo el administrador de empresa puede dar de alta equipos.' };
+  if (!can(profile, 'manage_equipment')) return { error: 'Tu rol no permite dar de alta equipos.' };
   const parsed = createEquipmentSchema.safeParse(input);
   if (!parsed.success)
     return { error: 'Completa los campos obligatorios y revisa el año de fabricación.' };
@@ -72,6 +79,40 @@ export async function createEquipment(input: unknown): Promise<FleetActionResult
   revalidatePath('/equipment');
   revalidatePath('/admin');
   return { success: true, publicCode: data };
+}
+export async function updateEquipment(input: unknown): Promise<FleetActionResult> {
+  const { db, profile } = await session();
+  if (!can(profile, 'manage_equipment')) return { error: 'Tu rol no permite modificar equipos.' };
+  const parsed = updateEquipmentSchema.safeParse(input);
+  if (!parsed.success) return { error: 'Revisa los datos del equipo y su ubicación.' };
+  const { publicCode, expectedUpdatedAt, ...details } = parsed.data;
+  const { data, error } = await db.rpc('update_equipment', {
+    p_public_code: publicCode,
+    p_expected_updated_at: expectedUpdatedAt,
+    p_input: details,
+  });
+  if (error) return { error: mutationError(error) };
+  revalidatePath('/equipment', 'layout');
+  revalidatePath('/admin', 'layout');
+  return { success: true, publicCode: data };
+}
+export async function assignMyEquipment(input: unknown): Promise<FleetActionResult> {
+  const { db, profile } = await session();
+  if (!can(profile, 'self_assign_equipment'))
+    return { error: 'Tu rol no permite autoasignarte equipos.' };
+  const parsed = selfAssignmentSchema.safeParse(input);
+  if (!parsed.success) return { error: 'Revisa el equipo y recarga tu asignación actual.' };
+  const { error } = await db.rpc('assign_my_equipment', {
+    p_equipment_code: parsed.data.equipmentCode,
+    p_expected_assignment: parsed.data.expectedAssignment,
+  });
+  if (error) return { error: mutationError(error) };
+  revalidatePath('/equipment', 'layout');
+  revalidatePath('/admin/assignments');
+  revalidatePath('/profile');
+  revalidatePath('/scan');
+  revalidatePath('/shift');
+  return { success: true };
 }
 export async function assignEquipment(input: unknown): Promise<FleetActionResult> {
   const { db, profile } = await session();

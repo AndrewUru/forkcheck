@@ -11,6 +11,7 @@ import { Empty } from '@/components/ui/status';
 import { RetireEquipmentForm } from '@/components/equipment/retire-form';
 import { EquipmentOperators } from '@/components/equipment/operators';
 import { EquipmentFocus } from '@/components/equipment/focus';
+import { SelfAssignment } from '@/components/equipment/self-assignment';
 import { parseFilters, todayIn, type SearchParams } from '@/lib/validations/filters';
 export default async function EquipmentDetail({
   params,
@@ -116,6 +117,14 @@ export default async function EquipmentDetail({
         today={todayIn(organization.data.timezone)}
         mayInspect={can(profile, 'inspect')}
       />
+      {can(profile, 'self_assign_equipment') && e.status !== 'INACTIVE' && (
+        <SelfAssignment equipmentId={e.id} equipmentCode={e.internal_code} />
+      )}
+      {can(profile, 'manage_equipment') && e.status !== 'INACTIVE' && (
+        <Link className="button" href={`/equipment/${e.public_code}/edit`}>
+          Modificar equipo
+        </Link>
+      )}
       <details className="equipment-information">
         <summary>Ficha, etiqueta QR y datos del activo</summary>
         <Link className="button" href={`/assistant?equipment=${encodeURIComponent(e.public_code)}`}>

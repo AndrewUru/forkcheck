@@ -1,6 +1,14 @@
 import { z } from 'zod';
 import { businessRoles } from '@/types/domain';
 export const employeeRoles = businessRoles;
+export const chiefDesignation = z
+  .object({
+    userId: z.uuid(),
+    branches: z.array(z.uuid()).min(1).max(100),
+    expectedRole: z.enum(['OPERARIO', 'JEFE_ALMACEN']),
+    expectedBranches: z.array(z.uuid()).max(100),
+  })
+  .strict();
 export const newEmployee = z
   .object({
     employee_id: z

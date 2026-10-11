@@ -160,6 +160,23 @@ export interface Database {
       };
     };
     Functions: {
+      designate_warehouse_chief: {
+        Args: {
+          p_user_id: string;
+          p_branches: string[];
+          p_expected_role: string;
+          p_expected_branches: string[];
+        };
+        Returns: string;
+      };
+      update_equipment: {
+        Args: { p_public_code: string; p_expected_updated_at: string; p_input: Json };
+        Returns: string;
+      };
+      assign_my_equipment: {
+        Args: { p_equipment_code: string; p_expected_assignment: string | null };
+        Returns: string | null;
+      };
       create_checklist_template: {
         Args: { p_input: Json; p_source?: string | null };
         Returns: string;

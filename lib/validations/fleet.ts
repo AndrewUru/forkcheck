@@ -19,6 +19,14 @@ export const assignmentSchema = z
     expectedAssignment: z.uuid().nullable(),
   })
   .strict();
+export const selfAssignmentSchema = assignmentSchema.omit({ employeeId: true });
+export const updateEquipmentSchema = createEquipmentSchema
+  .omit({ equipment_type_id: true, template_id: true })
+  .extend({
+    publicCode: z.string().min(1).max(80),
+    expectedUpdatedAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
 export type FleetActionResult = { success?: boolean; error?: string; publicCode?: string };
 export const nicknameSchema = z
   .string()

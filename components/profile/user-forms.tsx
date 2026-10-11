@@ -1,14 +1,14 @@
 'use client';
 import { useActionState } from 'react';
 import { createEmployee, deactivateEmployee } from '@/app/user-actions';
-import { employeeRoles } from '@/lib/validations/users';
-import { roleLabels } from '@/types/domain';
+import { roleLabels, type Role } from '@/types/domain';
+import { rolesForNewUsers } from '@/lib/permissions';
 export function CreateEmployeeForm({
   branches,
-  operatorOnly,
+  actorRole,
 }: {
   branches: { id: string; name: string }[];
-  operatorOnly: boolean;
+  actorRole: Role;
 }) {
   const [state, action, pending] = useActionState(createEmployee, { message: '' });
   return (
@@ -47,21 +47,21 @@ export function CreateEmployeeForm({
         <label>
           Rol
           <select name="role">
-            {employeeRoles
-              .filter((role) => !operatorOnly || role === 'OPERARIO')
-              .map((role) => (
-                <option key={role} value={role}>
-                  {roleLabels[role]}
-                </option>
-              ))}
+            {rolesForNewUsers({ role: actorRole, active: true }).map((role) => (
+              <option key={role} value={role}>
+                {roleLabels[role]}
+              </option>
+            ))}
           </select>
         </label>
         <fieldset>
           <legend>
             Sucursales autorizadas
-            {operatorOnly ? ' (obligatorias)' : ' (obligatorias salvo director general)'}
+            {actorRole === 'CORPORATE_ADMIN'
+              ? ' (obligatorias salvo director general)'
+              : ' (obligatorias)'}
           </legend>
-          {!operatorOnly && (
+          {actorRole === 'CORPORATE_ADMIN' && (
             <p>
               Dirección regional consulta las sucursales que selecciones. Dirección general consulta
               toda la organización.

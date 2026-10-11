@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { can, hasScope } from '@/lib/permissions';
+import { can, hasScope, rolesForNewUsers } from '@/lib/permissions';
 import { employeeEmail, loginSchema } from '@/lib/validations/inspection';
 import { businessRoles, roles, type Profile } from '@/types/domain';
 import { newEmployee } from '@/lib/validations/users';
@@ -32,16 +32,33 @@ describe('authorization', () => {
     expect(can({ ...p, role: 'SUPERADMIN' }, 'configure')).toBe(false);
     expect(hasScope({ ...p, role: 'SUPERADMIN' }, p.organization_id, 'branch', [])).toBe(false);
   });
-  it('limits warehouse management to operator creation and assignment', () => {
+  it('allows warehouse fleet management without corporate configuration', () => {
     const chief = { ...p, role: 'JEFE_ALMACEN' as const };
     expect(can(chief, 'create_users')).toBe(true);
     expect(can(chief, 'assign_equipment')).toBe(true);
     expect(can(chief, 'inspect')).toBe(true);
     expect(can(chief, 'configure')).toBe(false);
-    expect(can(chief, 'manage_equipment')).toBe(false);
+    expect(can(chief, 'manage_equipment')).toBe(true);
+    expect(can(chief, 'designate_chiefs')).toBe(false);
+    expect(rolesForNewUsers(chief)).toEqual(['OPERARIO']);
     expect(homeFor(chief)).toBe('/admin');
   });
-  it.each(['DELEGADO_CENTRO', 'EHS', 'DIRECTOR_REGIONAL', 'DIRECTOR_GENERAL'] as const)(
+  it('allows EHS to create chiefs and operators and manage scoped fleet', () => {
+    const ehs = { ...p, role: 'EHS' as const };
+    expect(rolesForNewUsers(ehs)).toEqual(['OPERARIO', 'JEFE_ALMACEN']);
+    for (const permission of [
+      'designate_chiefs',
+      'manage_equipment',
+      'assign_equipment',
+      'create_users',
+    ] as const)
+      expect(can(ehs, permission)).toBe(true);
+    expect(can(ehs, 'configure')).toBe(false);
+    expect(can(ehs, 'inspect')).toBe(false);
+    expect(can(p, 'self_assign_equipment')).toBe(true);
+    expect(can(p, 'assign_equipment')).toBe(false);
+  });
+  it.each(['DELEGADO_CENTRO', 'DIRECTOR_REGIONAL', 'DIRECTOR_GENERAL'] as const)(
     'gives %s reports without operational mutations',
     (role) => {
       const reader = { ...p, role };
@@ -50,6 +67,8 @@ describe('authorization', () => {
         'inspect',
         'create_users',
         'assign_equipment',
+        'self_assign_equipment',
+        'designate_chiefs',
         'manage_equipment',
         'maintain',
         'configure',
@@ -66,6 +85,8 @@ describe('authorization', () => {
       'dashboard',
       'create_users',
       'assign_equipment',
+      'self_assign_equipment',
+      'designate_chiefs',
       'manage_equipment',
       'maintain',
       'configure',

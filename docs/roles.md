@@ -4,10 +4,10 @@ Los niveles organizativos no heredan automáticamente los permisos de los nivele
 
 | Rol                 | Consulta                                                      | Acciones operativas                                           |
 | ------------------- | ------------------------------------------------------------- | ------------------------------------------------------------- |
-| Operario            | Equipos, revisiones e incidencias de sus sucursales           | Realizar y firmar sus checks; los fallos generan incidencias  |
-| Jefe de almacén     | Sus sucursales, dashboard y operarios con sucursal compartida | Realizar checks, crear operarios y asignar/quitar carretillas |
+| Operario            | Equipos, revisiones e incidencias de sus sucursales           | Realizar y firmar checks, autoasignarse maquinaria de su centro y quitar su asignación |
+| Jefe de almacén     | Sus sucursales, dashboard y operarios con sucursal compartida | Realizar checks, crear operarios; crear, modificar y asignar maquinaria |
 | Delegado del centro | Sus sucursales y dashboard                                    | Pendientes de definición; por ahora consulta                  |
-| Equipo EHS          | Sus sucursales y dashboard                                    | Pendientes de definición; por ahora consulta                  |
+| Equipo EHS          | Sus sucursales, dashboard, operarios y jefes de su alcance     | Crear operarios y jefes, designar jefes y sus centros; crear, modificar y asignar maquinaria |
 | Director regional   | Sucursales asignadas explícitamente y dashboard               | Ninguna                                                       |
 | Director general    | Toda su organización y dashboard                              | Ninguna                                                       |
 
@@ -19,7 +19,17 @@ Solo puede crear cuentas OPERARIO y concederles sucursales que él ya tiene auto
 
 Puede asignar equipos a operarios activos con acceso a la sucursal de destino. Si el operario ya tiene otro equipo, el jefe también debe tener acceso a la ubicación actual de ese equipo para cambiar o quitar la asignación. Las asignaciones de otros centros no se muestran ni se pueden terminar por conocer su identificador. Los cambios conservan el historial y rechazan ediciones concurrentes obsoletas.
 
-Dar de baja usuarios, restablecer contraseñas, crear/retirar máquinas, gestionar proveedores y editar/publicar plantillas siguen reservados al administrador de empresa anterior. Los permisos de desbloqueo y cierre de incidencias de delegado/EHS requieren una definición posterior; no se simulan ni se conceden por su posición jerárquica.
+Dar de baja usuarios, restablecer contraseñas, retirar máquinas, gestionar proveedores y editar/publicar plantillas siguen reservados al administrador de empresa anterior. Los permisos de desbloqueo y cierre de incidencias de delegado/EHS requieren una definición posterior; no se conceden por su posición jerárquica.
+
+## EHS y gestión compartida de maquinaria
+
+EHS crea operarios y jefes desde Usuarios. También puede designar a un operario existente como jefe y modificar los centros de un jefe existente. Debe tener acceso a todos sus centros anteriores y nuevos; no puede promover mandos superiores ni ampliar su propio alcance. El cambio conserva la identidad, exige finalizar inspecciones abiertas y, al promover a un operario, cierra su asignación personal conservando el histórico. El formulario requiere confirmar la designación y rechaza cambios de rol o centros hechos entretanto.
+
+EHS y jefes pueden dar de alta equipos con una plantilla publicada compatible y modificar su código interno, marca, modelo, serie, año, centro y zona. La ficha del equipo ofrece «Modificar equipo». El tipo, el plan de revisión, el QR y el estado no se alteran en esa edición. La edición tampoco desbloquea maquinaria. Para un traslado deben tener acceso al origen y destino, no debe haber inspecciones abiertas y todos los operarios asignados deben conservar acceso al destino. Se mantiene el historial de ubicaciones y se rechazan guardados obsoletos.
+
+## Autoasignación del operario
+
+Desde la ficha puede pulsar «Asignarme este equipo» o «Quitar mi asignación». La aplicación obtiene la identidad desde la sesión y verifica el centro en PostgreSQL; no permite elegir otro usuario. Puede cambiar su equipo actual, mantiene una única asignación personal activa y conserva las anteriores. Varios operarios pueden compartir máquina por turnos. No se admiten equipos retirados. Una asignación nunca autoriza el uso ni elimina bloqueos o revisiones pendientes.
 
 ## Compatibilidad e instalación
 
@@ -31,7 +41,7 @@ La migración `202610110001_business_roles.sql` renombra los valores del enum ex
 
 No se recrean perfiles ni se modifican las FK de inspecciones, firmas, auditoría o asignaciones. Las cuentas de mantenimiento y administración se identifican como anteriores en la interfaz; no aparecen entre los nuevos roles de negocio del formulario de alta. El script `provision:user` mantiene su disponibilidad para administración autorizada.
 
-Para una instalación existente, el responsable debe aplicar las migraciones pendientes en orden, incluida la nueva, actualizar `manage-users` y la aplicación en una ventana coordinada. La aplicación anterior contiene los nombres antiguos y no es compatible con la base ya renombrada. La migración no debe ejecutarse dos veces, ni debe volver a cargarse el seed. No hay despliegue automático.
+La ampliación de gestión compartida se instala con `202610110002_shared_fleet.sql`, después de `202610110001_business_roles.sql`. Para una instalación existente, el responsable debe aplicar solo las migraciones pendientes en orden, actualizar `manage-users` y la aplicación en una ventana coordinada. La aplicación con los nombres antiguos no es compatible con la base ya renombrada. No se repiten migraciones ni se vuelve a cargar el seed. No hay despliegue automático.
 
 Comprobaciones locales: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` y `npm run test:e2e`. La Edge Function se verifica con `deno check --config supabase/functions/deno.json supabase/functions/manage-users/index.ts`.
 

@@ -46,7 +46,7 @@ Deno.serve(async (request: Request) => {
     .single();
   if (
     !actor ||
-    !['CORPORATE_ADMIN', 'JEFE_ALMACEN'].includes(actor.role) ||
+    !['CORPORATE_ADMIN', 'JEFE_ALMACEN', 'EHS'].includes(actor.role) ||
     actor.must_change_password !== false
   )
     return reply(403, 'Not authorized');
@@ -98,6 +98,8 @@ Deno.serve(async (request: Request) => {
   if (!parsed.success) return reply(400, 'Invalid input');
   const { password, ...profileInput } = parsed.data;
   if (actor.role === 'JEFE_ALMACEN' && profileInput.role !== 'OPERARIO')
+    return reply(403, 'Not authorized');
+  if (actor.role === 'EHS' && !['OPERARIO', 'JEFE_ALMACEN'].includes(profileInput.role))
     return reply(403, 'Not authorized');
   // Check the caller's RLS-visible scope before creating an Auth identity.
   // register_employee rechecks every grant transactionally, including concurrent revocation.

@@ -129,6 +129,7 @@ beforeAll(async () => {
     "insert into equipment(organization_id,equipment_type_id,internal_code,brand,model) values($1,$2,'FOREIGN','Other','Other')",
     [otherOrg, type],
   );
+  await db.exec(await readFile('supabase/migrations/202610110002_shared_fleet.sql', 'utf8'));
 }, 60000);
 beforeEach(async () => {
   await db.exec('reset role; begin');
@@ -302,7 +303,6 @@ it.each(['', 'CAR-001'])('cannot end a remote assignment while selecting %s', as
 
 it.each([
   ['delegate', delegate],
-  ['EHS', ehs],
   ['regional', regional],
   ['general', director],
 ])('%s reads reports within scope and cannot inspect or administer', async (_name, id) => {

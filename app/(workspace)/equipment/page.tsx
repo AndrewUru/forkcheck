@@ -4,6 +4,7 @@ import { session } from '@/lib/auth/session';
 import { parseFilters, type SearchParams } from '@/lib/validations/filters';
 import { EquipmentList } from '@/components/equipment/list';
 import { MyEquipment } from '@/components/equipment/my-equipment';
+import { can } from '@/lib/permissions';
 export default async function EquipmentPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const f = parseFilters(params);
@@ -51,7 +52,7 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Se
           <p>Consulta el estado de tus equipos e inicia una revisión.</p>
         </div>
         <div className="heading-actions">
-          {profile.role === 'CORPORATE_ADMIN' && (
+          {can(profile, 'manage_equipment') && (
             <Link className="button primary" href="/admin/equipment/new">
               + Nuevo equipo
             </Link>
