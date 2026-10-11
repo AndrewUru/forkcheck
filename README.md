@@ -93,16 +93,21 @@ Todos los usuarios activos pueden abrir **Calendario diario** (`/calendar`) para
 
 El mantenimiento lo realiza la empresa de renting. **Proveedores de renting** (`/providers`) permite consultar sus teléfonos, correos y notas de contacto. CORPORATE_ADMIN da de alta, edita y desactiva proveedores. Para activar el directorio en una base existente, ejecuta `npm run setup:providers` y aplica una vez `artifacts/update-providers.sql` en Supabase SQL Editor. Esta actualización es independiente de la de flota y no añade contactos ficticios.
 
-| Rol              | Alcance inicial                                                                  |
-| ---------------- | -------------------------------------------------------------------------------- |
-| OPERARIO         | Equipos/historial de sucursales explícitas, iniciar y completar sus inspecciones |
-| MANTENIMIENTO    | Lectura técnica de sucursales asignadas; esquema preparado para órdenes/acciones |
-| SUPERVISOR       | Lectura, dashboard e inspecciones en sucursales asignadas                        |
-| REGIONAL_MANAGER | Dashboard y lectura de múltiples sucursales explícitamente asignadas             |
-| CORPORATE_ADMIN  | Lectura y operación en su organización completa                                  |
-| SUPERADMIN       | Sin bypass multi-tenant; reservado para administración técnica                   |
+| Rol | Alcance |
+| --- | --- |
+| OPERARIO | Equipos e histórico de sucursales autorizadas; realiza y firma sus inspecciones |
+| JEFE_ALMACEN | Consulta e inspecciones; crea operarios y asigna carretillas dentro de sus sucursales |
+| DELEGADO_CENTRO | Consulta y dashboard de sus sucursales; acciones adicionales pendientes de definición |
+| EHS | Consulta y dashboard de sus sucursales; acciones adicionales pendientes de definición |
+| DIRECTOR_REGIONAL | Solo consulta y dashboard de sucursales explícitamente asignadas |
+| DIRECTOR_GENERAL | Solo consulta y dashboard de toda su organización |
+| MANTENIMIENTO | Compatibilidad: lectura técnica de sucursales asignadas |
+| CORPORATE_ADMIN | Compatibilidad: administración de su organización |
+| SUPERADMIN | Administración técnica sin acceso empresarial implícito |
 
-CORPORATE_ADMIN puede dar de alta y retirar equipos, y asignar un equipo activo a cada usuario mediante las pantallas de flota. La retirada conserva el historial y desactiva los planes. El usuario puede editar su nickname en «Mi perfil». Estas funciones requieren aplicar las migraciones incrementales de flota en Supabase. La configuración de plantillas, usuarios y actualizaciones de mantenimiento sigue fuera de esta entrega; **no se conceden permisos SQL amplios al navegador**. La administración técnica de plataforma no confiere lectura global de tenants.
+Los roles no heredan permisos por jerarquía. La dirección conserva la gestión de su propia contraseña y nickname, sin acciones operativas. CORPORATE_ADMIN mantiene las altas/bajas de equipos, usuarios, recuperación de contraseñas, proveedores y plantillas. JEFE_ALMACEN no recibe esas facultades: solo alta de operarios y asignaciones personales, además de la consulta e inspección del antiguo supervisor. **No se conceden escrituras SQL directas al navegador**.
+
+Para activar estos roles en una instalación existente, aplicar una vez `supabase/migrations/202610110001_business_roles.sql` después de las migraciones anteriores, actualizar la Edge Function `manage-users` y publicar la versión de la aplicación en una ventana coordinada. El cambio renombra `SUPERVISOR` → `JEFE_ALMACEN` y `REGIONAL_MANAGER` → `DIRECTOR_REGIONAL` sin cambiar IDs, sucursales ni históricos. No transforma `MANTENIMIENTO` ni `CORPORATE_ADMIN` en otros cargos. Las altas desde la interfaz solo ofrecen los seis roles de negocio; la provisión administrativa conserva los roles anteriores y técnicos. Véase [la guía de roles](docs/roles.md). Este cambio no despliega ni modifica el Supabase alojado automáticamente.
 
 Para actualizar el proyecto Supabase ya existente sin volver a ejecutar el seed, ejecuta `npm run setup:fleet` y pega el contenido de `artifacts/update-fleet.sql` en su SQL Editor. Ejecuta el bloque una sola vez; después recarga la app. La actualización debe aplicarse con acceso de propietario a ese proyecto.
 
