@@ -93,17 +93,17 @@ Todos los usuarios activos pueden abrir **Calendario diario** (`/calendar`) para
 
 El mantenimiento lo realiza la empresa de renting. **Proveedores de renting** (`/providers`) permite consultar sus teléfonos, correos y notas de contacto. CORPORATE_ADMIN da de alta, edita y desactiva proveedores. Para activar el directorio en una base existente, ejecuta `npm run setup:providers` y aplica una vez `artifacts/update-providers.sql` en Supabase SQL Editor. Esta actualización es independiente de la de flota y no añade contactos ficticios.
 
-| Rol | Alcance |
-| --- | --- |
-| OPERARIO | Equipos e histórico de sucursales autorizadas; realiza y firma sus inspecciones |
-| JEFE_ALMACEN | Consulta e inspecciones; crea operarios y asigna carretillas dentro de sus sucursales |
-| DELEGADO_CENTRO | Consulta y dashboard de sus sucursales; acciones adicionales pendientes de definición |
-| EHS | Consulta y dashboard de sus sucursales; acciones adicionales pendientes de definición |
-| DIRECTOR_REGIONAL | Solo consulta y dashboard de sucursales explícitamente asignadas |
-| DIRECTOR_GENERAL | Solo consulta y dashboard de toda su organización |
-| MANTENIMIENTO | Compatibilidad: lectura técnica de sucursales asignadas |
-| CORPORATE_ADMIN | Compatibilidad: administración de su organización |
-| SUPERADMIN | Administración técnica sin acceso empresarial implícito |
+| Rol               | Alcance                                                                               |
+| ----------------- | ------------------------------------------------------------------------------------- |
+| OPERARIO          | Equipos e histórico de sucursales autorizadas; realiza y firma sus inspecciones       |
+| JEFE_ALMACEN      | Consulta e inspecciones; crea operarios y asigna carretillas dentro de sus sucursales |
+| DELEGADO_CENTRO   | Consulta y dashboard de sus sucursales; acciones adicionales pendientes de definición |
+| EHS               | Consulta y dashboard de sus sucursales; acciones adicionales pendientes de definición |
+| DIRECTOR_REGIONAL | Solo consulta y dashboard de sucursales explícitamente asignadas                      |
+| DIRECTOR_GENERAL  | Solo consulta y dashboard de toda su organización                                     |
+| MANTENIMIENTO     | Compatibilidad: lectura técnica de sucursales asignadas                               |
+| CORPORATE_ADMIN   | Compatibilidad: administración de su organización                                     |
+| SUPERADMIN        | Administración técnica sin acceso empresarial implícito                               |
 
 Los roles no heredan permisos por jerarquía. La dirección conserva la gestión de su propia contraseña y nickname, sin acciones operativas. CORPORATE_ADMIN mantiene las altas/bajas de equipos, usuarios, recuperación de contraseñas, proveedores y plantillas. JEFE_ALMACEN no recibe esas facultades: solo alta de operarios y asignaciones personales, además de la consulta e inspección del antiguo supervisor. **No se conceden escrituras SQL directas al navegador**.
 

@@ -28,7 +28,11 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
         <div>
           <p className="eyebrow">ADMINISTRACIÓN</p>
           <h1>Usuarios</h1>
-          <p>{admin ? 'Altas, bajas y recuperación de acceso de tu organización.' : 'Alta de operarios en tus sucursales autorizadas.'}</p>
+          <p>
+            {admin
+              ? 'Altas, bajas y recuperación de acceso de tu organización.'
+              : 'Alta de operarios en tus sucursales autorizadas.'}
+          </p>
         </div>
         <Link className="button" href="/admin/assignments">
           Ver asignaciones de máquinas

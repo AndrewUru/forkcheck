@@ -8,12 +8,7 @@ export const businessRoles = [
   'DIRECTOR_REGIONAL',
   'DIRECTOR_GENERAL',
 ] as const;
-export const roles = [
-  ...businessRoles,
-  'MANTENIMIENTO',
-  'CORPORATE_ADMIN',
-  'SUPERADMIN',
-] as const;
+export const roles = [...businessRoles, 'MANTENIMIENTO', 'CORPORATE_ADMIN', 'SUPERADMIN'] as const;
 export type Role = (typeof roles)[number];
 export const roleLabels: Record<Role, string> = {
   OPERARIO: 'Operario',

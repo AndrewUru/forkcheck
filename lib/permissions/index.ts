@@ -9,7 +9,14 @@ export type Permission =
   | 'configure';
 const permissions: Record<Permission, readonly Role[]> = {
   inspect: ['OPERARIO', 'JEFE_ALMACEN', 'CORPORATE_ADMIN'],
-  dashboard: ['JEFE_ALMACEN', 'DELEGADO_CENTRO', 'EHS', 'DIRECTOR_REGIONAL', 'DIRECTOR_GENERAL', 'CORPORATE_ADMIN'],
+  dashboard: [
+    'JEFE_ALMACEN',
+    'DELEGADO_CENTRO',
+    'EHS',
+    'DIRECTOR_REGIONAL',
+    'DIRECTOR_GENERAL',
+    'CORPORATE_ADMIN',
+  ],
   manage_equipment: ['CORPORATE_ADMIN'],
   create_users: ['JEFE_ALMACEN', 'CORPORATE_ADMIN'],
   assign_equipment: ['JEFE_ALMACEN', 'CORPORATE_ADMIN'],
@@ -28,6 +35,8 @@ export function hasScope(
   return (
     profile.active &&
     profile.organization_id === organizationId &&
-    (profile.role === 'CORPORATE_ADMIN' || profile.role === 'DIRECTOR_GENERAL' || branches.includes(branchId))
+    (profile.role === 'CORPORATE_ADMIN' ||
+      profile.role === 'DIRECTOR_GENERAL' ||
+      branches.includes(branchId))
   );
 }

@@ -2,14 +2,14 @@
 
 Los niveles organizativos no heredan automáticamente los permisos de los niveles inferiores. PostgreSQL vuelve a autorizar cada operación y aplica RLS a las lecturas, incluidas las de dirección.
 
-| Rol | Consulta | Acciones operativas |
-| --- | --- | --- |
-| Operario | Equipos, revisiones e incidencias de sus sucursales | Realizar y firmar sus checks; los fallos generan incidencias |
-| Jefe de almacén | Sus sucursales, dashboard y operarios con sucursal compartida | Realizar checks, crear operarios y asignar/quitar carretillas |
-| Delegado del centro | Sus sucursales y dashboard | Pendientes de definición; por ahora consulta |
-| Equipo EHS | Sus sucursales y dashboard | Pendientes de definición; por ahora consulta |
-| Director regional | Sucursales asignadas explícitamente y dashboard | Ninguna |
-| Director general | Toda su organización y dashboard | Ninguna |
+| Rol                 | Consulta                                                      | Acciones operativas                                           |
+| ------------------- | ------------------------------------------------------------- | ------------------------------------------------------------- |
+| Operario            | Equipos, revisiones e incidencias de sus sucursales           | Realizar y firmar sus checks; los fallos generan incidencias  |
+| Jefe de almacén     | Sus sucursales, dashboard y operarios con sucursal compartida | Realizar checks, crear operarios y asignar/quitar carretillas |
+| Delegado del centro | Sus sucursales y dashboard                                    | Pendientes de definición; por ahora consulta                  |
+| Equipo EHS          | Sus sucursales y dashboard                                    | Pendientes de definición; por ahora consulta                  |
+| Director regional   | Sucursales asignadas explícitamente y dashboard               | Ninguna                                                       |
+| Director general    | Toda su organización y dashboard                              | Ninguna                                                       |
 
 Todos pueden cambiar su propia contraseña y nickname. El alcance regional se configura seleccionando las sucursales correspondientes; añadir una sucursal a una región no concede acceso automáticamente a los directores regionales existentes. El jefe puede tener varias sucursales explícitas, igual que el supervisor anterior.
 

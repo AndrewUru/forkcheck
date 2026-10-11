@@ -44,7 +44,11 @@ Deno.serve(async (request: Request) => {
     .eq('id', user.id)
     .eq('active', true)
     .single();
-  if (!actor || !['CORPORATE_ADMIN', 'JEFE_ALMACEN'].includes(actor.role) || actor.must_change_password !== false)
+  if (
+    !actor ||
+    !['CORPORATE_ADMIN', 'JEFE_ALMACEN'].includes(actor.role) ||
+    actor.must_change_password !== false
+  )
     return reply(403, 'Not authorized');
   const { data: organization } = await db
     .from('organizations')
