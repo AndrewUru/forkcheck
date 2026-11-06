@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import QRCode from 'qrcode';
+import { ResolutionForm } from '@/components/incidents/resolution-form';
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
 import { ArrowLeft, ClipboardCheck, MapPin } from 'lucide-react';
@@ -125,6 +126,9 @@ export default async function EquipmentDetail({
           Modificar equipo
         </Link>
       )}
+      {can(profile, 'configure') && ['WARNING', 'BLOCKED', 'MAINTENANCE'].includes(e.status) && (
+        <ResolutionForm id={e.id} updatedAt={e.updated_at} equipment />
+      )}
       <details className="equipment-information">
         <summary>Ficha, etiqueta QR y datos del activo</summary>
         <Link className="button" href={`/assistant?equipment=${encodeURIComponent(e.public_code)}`}>
@@ -243,6 +247,30 @@ export default async function EquipmentDetail({
           </Empty>
         )}
       </section>
+      {can(profile, 'dashboard') && (
+        <form
+          action={`/api/equipment/${e.public_code}/history`}
+          method="get"
+          className="panel detail-panel management-form"
+        >
+          <h2>Exportar historial de revisiones</h2>
+          <p>
+            CSV de revisiones finalizadas, hasta 1.000 registros por descarga. Las fechas se filtran
+            según la zona horaria de la empresa. No incluye fotografías ni firmas.
+          </p>
+          <label>
+            Desde
+            <input type="date" name="from" />
+          </label>
+          <label>
+            Hasta
+            <input type="date" name="to" />
+          </label>
+          <button className="button" type="submit">
+            Descargar CSV
+          </button>
+        </form>
+      )}
       <h2 className="history-title">
         Historial autorizado <small>Últimos 20 registros por categoría</small>
       </h2>
@@ -268,6 +296,11 @@ export default async function EquipmentDetail({
                 <div>
                   <strong>{i.title}</strong>
                   <p>{i.description}</p>
+                  {i.resolution_notes && (
+                    <p>
+                      <strong>Resolución:</strong> {i.resolution_notes}
+                    </p>
+                  )}
                 </div>
                 <span className={i.severity === 'CRITICAL' ? 'text-red' : ''}>
                   {i.severity} · {i.status}

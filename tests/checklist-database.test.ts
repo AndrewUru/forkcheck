@@ -216,9 +216,14 @@ it('pins open inspections to their original version while new inspections adopt 
   await as(admin);
   const plans = (
     await db.query<{ id: string; template_id: string }>(
-      'select id,template_id from equipment_schedules where template_id=(select template_id from equipment_schedules limit 1) order by id limit 2',
+      `select s.id,s.template_id from equipment_schedules s join equipment e on e.id=s.equipment_id
+       where s.active and e.status='OPERATIVE' and s.template_id=(
+         select s2.template_id from equipment_schedules s2 join equipment e2 on e2.id=s2.equipment_id
+         where s2.active and e2.status='OPERATIVE' group by s2.template_id having count(*) >= 2
+         order by s2.template_id limit 1) order by s.id limit 2`,
     )
   ).rows;
+  expect(plans).toHaveLength(2);
   const first = await scalar<string>('select start_inspection($1) value', [plans[0].id]);
   const oldVersion = await scalar<string>(
     'select checklist_version_id value from inspections where id=$1',

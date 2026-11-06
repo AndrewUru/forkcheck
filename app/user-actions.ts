@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { requirePermission } from '@/lib/auth/session';
 import { newEmployee, chiefDesignation } from '@/lib/validations/users';
 import { rolesForNewUsers } from '@/lib/permissions';
+import { employeeCreationError } from '@/lib/users/errors';
 export async function createEmployee(_previous: { message: string }, form: FormData) {
   const { db, profile } = await requirePermission('create_users');
   const input = newEmployee.safeParse({
@@ -17,11 +18,11 @@ export async function createEmployee(_previous: { message: string }, form: FormD
     };
   if (!rolesForNewUsers(profile).includes(input.data.role))
     return { message: 'Tu rol no permite crear ese tipo de usuario.' };
-  const { error } = await db.functions.invoke('manage-users', { body: input.data });
-  if (error)
+  const { data, error } = await db.functions.invoke('manage-users', { body: input.data });
+  if (error) return { message: await employeeCreationError(error) };
+  if (!z.object({ success: z.literal(true) }).safeParse(data).success)
     return {
-      message:
-        'No se pudo crear el usuario. Comprueba si el ID ya existe y si la función manage-users y la migración están instaladas.',
+      message: 'No se pudo confirmar el alta. Comprueba si el usuario aparece antes de reintentar.',
     };
   revalidatePath('/admin/assignments');
   revalidatePath('/admin/users');

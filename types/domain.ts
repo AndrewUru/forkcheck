@@ -110,6 +110,8 @@ export interface Incident {
   created_at: string;
   updated_at: string;
   resolved_at: string | null;
+  resolution_notes: string | null;
+  resolved_by: string | null;
 }
 export const metricsSchema = z.object({
   branches: z.number(),

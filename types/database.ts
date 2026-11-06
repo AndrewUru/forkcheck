@@ -160,6 +160,14 @@ export interface Database {
       };
     };
     Functions: {
+      resolve_incident: {
+        Args: { p_incident: string; p_expected_updated_at: string; p_notes: string };
+        Returns: string;
+      };
+      return_equipment_to_service: {
+        Args: { p_equipment: string; p_expected_updated_at: string; p_reason: string };
+        Returns: string;
+      };
       designate_warehouse_chief: {
         Args: {
           p_user_id: string;

@@ -192,3 +192,8 @@ El smoke test de navegador utiliza una instancia sin credenciales y comprueba es
 Se incluye manifest e iconos instalables. No hay service worker que cachee datos empresariales ni sincronización offline. El asistente de `/assistant` usa `OPENAI_API_KEY` solo en el servidor y consultas limitadas por RLS. Sin esa variable muestra un error de configuración. `OPENAI_MODEL` permite elegir el modelo; el valor por defecto es `gpt-5-mini`.
 
 Decisiones y límites: [docs/architecture.md](docs/architecture.md). Reglas para agentes: [AGENTS.md](AGENTS.md).
+
+
+## Piloto comercial (noviembre de 2026)
+
+Cierre auditado de incidencias, autorización independiente de puesta en servicio, exportación CSV por equipo y mensajes de diagnóstico del alta de empleados. Requiere la nueva migración `202611060001_incident_resolution.sql` y actualizar `manage-users`. Consulta [instalación, permisos y límites del piloto](docs/pilot-release.md) antes de desplegar. La rama `main` no cambia automáticamente la configuración de producción que utilizaba `master`.

@@ -26,7 +26,7 @@ beforeEach(() => {
     profile: { role: 'JEFE_ALMACEN', active: true },
     db: { functions: { invoke: mocks.invoke } },
   });
-  mocks.invoke.mockResolvedValue({ error: null });
+  mocks.invoke.mockResolvedValue({ data: { success: true }, error: null });
 });
 it('reauthorizes operator creation and sends only validated employee fields', async () => {
   const data = form();
@@ -61,4 +61,23 @@ it('does not report success or refresh data when the backend rejects scope', asy
   mocks.invoke.mockResolvedValue({ error: { message: 'Invalid branch' } });
   expect((await createEmployee({ message: '' }, form())).message).toContain('No se pudo crear');
   expect(mocks.revalidate).not.toHaveBeenCalled();
+});
+
+it('does not report success for an empty or malformed backend response', async () => {
+  mocks.invoke.mockResolvedValue({ data: null, error: null });
+  expect((await createEmployee({ message: '' }, form())).message).toContain('No se pudo confirmar');
+  expect(mocks.revalidate).not.toHaveBeenCalled();
+});
+it('explains duplicate accounts without exposing raw backend errors', async () => {
+  mocks.invoke.mockResolvedValue({
+    error: {
+      context: Response.json(
+        { code: 'DUPLICATE_USER', error: 'sensitive backend detail' },
+        { status: 409 },
+      ),
+    },
+  });
+  const result = await createEmployee({ message: '' }, form());
+  expect(result.message).toContain('ya existe');
+  expect(result.message).not.toContain('sensitive');
 });

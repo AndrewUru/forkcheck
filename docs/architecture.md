@@ -111,3 +111,12 @@ Se mantiene Supabase real. La instalación manual en SQL Editor se genera desde 
 
 - Se aplica la referencia visual facilitada: azul principal #0047AB, azul oscuro #083D82, blanco y amarillo #E9AB19. Cian #008EC4, verde #00AC83, rojo #E40036 y violeta #6B56A2 quedan como acentos secundarios.
 - Los colores de estado conservan su significado; los textos usan variantes oscuras para mantener contraste. La paleta se comparte entre navegación, formularios, login e iconos de la PWA mediante variables CSS.
+
+## Piloto comercial: resolución, puesta en servicio y exportación (noviembre 2026)
+
+- MANTENIMIENTO y CORPORATE_ADMIN registran el cierre de incidencias con una descripción obligatoria de la reparación/verificación. Se conservan autor, fecha, descripción y auditoría. Se exige alcance sobre la sucursal histórica y la ubicación actual; no se modifica automáticamente el estado del equipo. Las órdenes de mantenimiento abiertas y las inspecciones en curso impiden el cierre.
+- Solo CORPORATE_ADMIN autoriza explícitamente la puesta en servicio de equipos WARNING, BLOCKED o MAINTENANCE. Exige justificación, confirmación y revisión optimista de updated_at; rechaza incidencias/órdenes abiertas e inspecciones en curso. Nunca recupera equipos retirados. La autorización se audita con motivo y autor, sin reescribir inspecciones ni aplazar revisiones. Esta decisión conserva los permisos actuales de jefes y EHS.
+- Las RPC bloquean primero el equipo para serializarse con inicio/finalización y traslados; no aceptan organización ni actor del navegador. Se añade una migración incremental, sin cambiar las ya instaladas.
+- Exportación CSV por equipo para perfiles con permiso dashboard, con RLS, fechas de finalización en la zona de la organización y máximo de 1.000 inspecciones completas por descarga. Si el resultado excede el límite o queda truncado, se rechaza y se pide acotar fechas. No incluye fotos, firmas ni secretos. Se neutralizan fórmulas de hoja de cálculo y se deshabilita caché.
+- El alta de empleados distingue fallos de sesión, permisos, disponibilidad, política de contraseña y duplicados. Solo informa de éxito ante respuesta explícita del backend. Los mensajes de diagnóstico son un vocabulario cerrado; nunca se propagan errores crudos de Auth ni credenciales.
+- Publicar código en main no aplica migraciones ni instala Edge Functions. La instalación y pruebas con sesiones reales se documentan aparte.

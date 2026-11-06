@@ -21,8 +21,21 @@ const inputSchema = z
   .refine((v) => v.role === 'DIRECTOR_GENERAL' || v.branches.length > 0);
 
 Deno.serve(async (request: Request) => {
-  const reply = (status: number, error?: string) =>
-    Response.json(error ? { error } : { success: true }, { status });
+  const codes: Record<string, string> = {
+    'Authentication required': 'AUTH_REQUIRED',
+    'Not authorized': 'FORBIDDEN',
+    'Invalid branch': 'FORBIDDEN',
+    'Organization unavailable': 'FORBIDDEN',
+    'Invalid input': 'INVALID_INPUT',
+    'Migration required': 'SETUP_REQUIRED',
+    'Identity cleanup required': 'CLEANUP_REQUIRED',
+    'Profile could not be created': 'PROFILE_FAILED',
+  };
+  const reply = (status: number, error?: string, code?: string) =>
+    Response.json(
+      error ? { error, code: code ?? codes[error] ?? 'AUTH_UNAVAILABLE' } : { success: true },
+      { status, headers: { 'Cache-Control': 'no-store' } },
+    );
   if (request.method !== 'POST') return reply(405, 'Method unavailable');
   const authorization = request.headers.get('Authorization');
   if (!authorization?.startsWith('Bearer ')) return reply(401, 'Authentication required');
@@ -38,12 +51,20 @@ Deno.serve(async (request: Request) => {
     error: authError,
   } = await db.auth.getUser(authorization.slice(7));
   if (authError || !user) return reply(401, 'Authentication required');
-  const { data: actor } = await db
+  const { data: actor, error: actorError } = await db
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .eq('active', true)
     .single();
+  if (
+    actorError?.code === '42703' ||
+    actorError?.code === 'PGRST204' ||
+    actorError?.code === 'PGRST205'
+  )
+    return reply(503, 'Migration required');
+  if (actor && typeof actor.must_change_password !== 'boolean')
+    return reply(503, 'Migration required');
   if (
     !actor ||
     !['CORPORATE_ADMIN', 'JEFE_ALMACEN', 'EHS'].includes(actor.role) ||
@@ -121,7 +142,13 @@ Deno.serve(async (request: Request) => {
     password,
     email_confirm: true,
   });
-  if (error || !created.user) return reply(409, 'User could not be created');
+  if (error || !created.user) {
+    if (error?.code === 'email_exists' || error?.code === 'user_already_exists')
+      return reply(409, 'User could not be created', 'DUPLICATE_USER');
+    if (error?.code === 'weak_password')
+      return reply(400, 'User could not be created', 'WEAK_PASSWORD');
+    return reply(503, 'User could not be created', 'AUTH_UNAVAILABLE');
+  }
   const result = await db.rpc('register_employee', {
     p_auth_id: created.user.id,
     p_input: profileInput,
@@ -130,7 +157,11 @@ Deno.serve(async (request: Request) => {
     const rollback = await admin.auth.admin.deleteUser(created.user.id);
     return reply(
       rollback.error ? 500 : 400,
-      rollback.error ? 'Identity cleanup required' : 'Profile could not be created',
+      rollback.error
+        ? 'Identity cleanup required'
+        : result.error.code === 'PGRST202'
+          ? 'Migration required'
+          : 'Profile could not be created',
     );
   }
   return reply(200);
